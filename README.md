@@ -6,7 +6,7 @@
 * Minimal example : http://timothe.malahieude.net/projects/aQuery/aQuery-min.zip
 
 aQuery is basically the Android equivalent of the famous Web Framework [jQuery](https://jquery.com/).
-Its aim is exactly the same : perform simple tasks in few lines of code. You will find the "magic" `$` function that does everything, and most of the functions available in jQuery Framework can be found in aQuery too : `elt.prop()`, `elt.attr()`, `$.ajax()`... All of these are implemented and work the same way !
+Its aim is exactly the same : perform basic tasks in few lines of code. You will find the "magic" `$` function that does everything, and most of the functions available in jQuery Framework can be found in aQuery too : `elt.prop()`, `elt.attr()`, `$.ajax()`... All of these are implemented and work the same way !
 
 ## Comparison without/with
 Here is a code example that do not use aQuery :
@@ -137,6 +137,6 @@ aQuery provides many functions to simplify your life of Android Developer
 * Convert a unit into another : `$.convert(10, "px","dp")`
 * Append views in an XML resource to a parent : `$(R.layout.message, $("#messages_list"));`;
 
-For further details about what you can do, The best is to download the [Demo Examples](http://timothe.malahieude.net/projects/aQuery/aQuery-demo.zip) and look how it works.
+For further details about what you can do, take a look at the [Wiki](https://github.com/tmalahie/aQuery/wiki) and download the [Demo Examples](http://timothe.malahieude.net/projects/aQuery/aQuery-demo.zip).
 
 Want to take part in the project ? Send me an email at t.malahieude@gmail.com to ask to contribute !
