@@ -775,13 +775,20 @@ public class $Utils {
     /**
      * Show a dialog box to ask the user to confirm an action
      * @param title
-     * The title of the dialog box
+     * The title of the dialog box. May be null
      * @param onConfirm
      * The function called when the user clicks on yes
      */
     public void confirm(String title, Runnable onConfirm) {
         confirm(title, (String) null, onConfirm);
     }
+    /**
+     * Show a dialog box to ask the user to confirm an action
+     * @param title
+     * The title of the dialog box. May be null
+     * @param onConfirm
+     * The function called when the user clicks on yes
+     */
     public void confirm(String title, String message, Runnable onConfirm) {
         confirm(title, message, onConfirm, null);
     }
@@ -798,9 +805,9 @@ public class $Utils {
     /**
      * Show a dialog box to ask the user to confirm an action
      * @param title
-     * The title of the dialog box
+     * The title of the dialog box. May be null
      * @param message
-     * The message to display
+     * The message to display. May be null
      * @param onConfirm
      * The function called when the user clicks on yes
      * @param onDeny
@@ -812,9 +819,9 @@ public class $Utils {
     /**
      * Show a dialog box to ask the user to confirm an action
      * @param title
-     * The title of the dialog box
+     * The title of the dialog box. May be null
      * @param message
-     * The message to display
+     * The message to display. May be null
      * @param onConfirm
      * The function called when the user clicks on yes
      * @param onDeny
@@ -920,6 +927,58 @@ public class $Utils {
     }
 
     /**
+     * An interface for choose() function
+     */
+    public interface ChoiceListener {
+        /**
+         * Function called when the user chose something
+         * @param id
+         * The id of the item selected
+         * @param choice
+         * The text value of the item selected
+         */
+        void onChoose(int id, String choice);
+
+        /**
+         * Function called when the user cancelled his action
+         */
+        void onCancel();
+    }
+
+    /**
+     * Shows a dialog box to ask the user to select an item within a list of choices
+     * @param choices
+     * An array containing all possible choices
+     * @param callback
+     * The function called when the user has made his choice
+     */
+    public void choose(String[] choices, ChoiceListener callback) {
+        choose(null, choices,callback);
+    }
+    /**
+     * Shows a dialog box to ask the user to select an item within a list of choices
+     * @param title
+     * The title of the dialog box. May be null
+     * @param choices
+     * An array containing all possible choices
+     * @param callback
+     * The function called when the user has made his choice
+     */
+    public void choose(String title, final String[] choices, final ChoiceListener callback) {
+        popup(title).setItems(choices, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onChoose(which, choices[which]);
+            }
+        }).setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                callback.onCancel();
+            }
+        }).show();
+    }
+
+    /**
      * Creates a dialog box and returns it
      * @return
      * The dialog box created
@@ -933,7 +992,7 @@ public class $Utils {
     /**
      * Creates a dialog box and returns it
      * @param title
-     * The title of the dialog box
+     * The title of the dialog box. May be null
      * @return
      * The dialog box created
      */
@@ -943,9 +1002,9 @@ public class $Utils {
     /**
      * Creates a dialog box and returns it
      * @param title
-     * The title of the dialog box
+     * The title of the dialog box. May be null
      * @param message
-     * The message to display
+     * The message to display. May be null
      * @return
      * The dialog box created
      */
