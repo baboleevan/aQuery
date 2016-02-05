@@ -26,7 +26,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.DigitsKeyListener;
 import android.text.util.Linkify;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -6126,13 +6125,19 @@ public abstract class AQuery {
      * Returns the value of the layout_width attribute of the first element in the set of elements
      */
     public int layoutWidth() {
-        return head().getLayoutParams().width;
+        ViewGroup.LayoutParams lp = lp();
+        if (lp == null)
+            return 0;
+        return lp.width;
     }
     /**
      * Returns the value of the layout_height attribute of the first element in the set of elements
      */
     public int layoutHeight() {
-        return head().getLayoutParams().height;
+        ViewGroup.LayoutParams lp = lp();
+        if (lp == null)
+            return 0;
+        return lp.height;
     }
     /**
      * Sets the value of the layout_width attribute of the elements
@@ -6151,6 +6156,14 @@ public abstract class AQuery {
         return this;
     }
     /**
+     * Sets the value of the layout_width attribute of the elements
+     * @param w
+     * The desired width in the XML format, like "20dp" or "match_parent" or "wrap_content"
+     */
+    public AQuery layoutWidth(String w) {
+        return layoutWidth(formatSize(w));
+    }
+    /**
      * Sets the value of the layout_height attribute of the elements
      * @param h
      * The desired height in pixels, or MATCH_PARENT or WRAP_CONTENT
@@ -6165,6 +6178,14 @@ public abstract class AQuery {
             v.setLayoutParams(lp);
         }
         return this;
+    }
+    /**
+     * Sets the value of the layout_height attribute of the elements
+     * @param h
+     * The desired height in the XML format, like "20dp" or "match_parent" or "wrap_content"
+     */
+    public AQuery layoutHeight(String h) {
+        return layoutHeight(formatSize(h));
     }
 
     /**
@@ -6286,6 +6307,36 @@ public abstract class AQuery {
     public void lp(ViewGroup.LayoutParams params) {
         for (View v : list())
             v.setLayoutParams(params);
+    }
+    /**
+     * Sets the layout layout_width and layout_height of the elements
+     * @param width
+     * The desired width in pixels, or MATCH_PARENT or WRAP_CONTENT
+     * @param height
+     * The desired width in pixels, or MATCH_PARENT or WRAP_CONTENT
+     */
+    public AQuery lp(int width, int height) {
+        for (View v : list()) {
+            ViewGroup.LayoutParams lp = v.getLayoutParams();
+            if (lp == null)
+                lp = new ViewGroup.LayoutParams(width, height);
+            else {
+                lp.width = width;
+                lp.height = height;
+            }
+            v.setLayoutParams(lp);
+        }
+        return this;
+    }
+    /**
+     * Sets the layout layout_width and layout_height of the elements
+     * @param width
+     * The desired width in the XML format, like "20dp" or "match_parent" or "wrap_content"
+     * @param height
+     * The desired height in the XML format, like "20dp" or "match_parent" or "wrap_content"
+     */
+    public AQuery lp(String width, String height) {
+        return lp(formatSize(width), formatSize(height));
     }
 
     /**

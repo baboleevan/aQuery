@@ -888,8 +888,7 @@ public class $Utils {
      */
     public void prompt(String title, String message, String defaut, final PromptListener callback) {
         final AQuery promptView = create("EditText")
-                .attr("layout_width", "match_parent")
-                .attr("layout_width", "wrap_content")
+                .lp("match_parent", "wrap_content")
                 .attr("inputType", "text")
                 .prop("singleLine", true);
         if (defaut != null)
