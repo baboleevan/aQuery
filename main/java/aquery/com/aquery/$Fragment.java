@@ -16,9 +16,9 @@ import java.util.List;
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class $Fragment extends Fragment {
-    private $FConstructors aqFactory = new $FConstructors(this); // The object containing all useful methods to construct AQuery objects
+    private final $FConstructors aqFactory = new $FConstructors(this); // The object containing all useful methods to construct AQuery objects
 
-    protected static class $ extends $FUtils {
+    public static class $ extends $FUtils {
         public $(Fragment ctx) {
             super(ctx);
         }
@@ -31,15 +31,15 @@ public class $Fragment extends Fragment {
         $.initActivity();
     }
 
-    protected $ $ = new $(this); // The object containing all useful functions
+    public final $ $ = new $(this); // The object containing all useful functions
 
     /**
      * Returns the AQuery element containing the root of the fragment
      */
-    protected AQuery $() {
+    public AQuery $() {
         return aqFactory.$();
     }
-    protected AQuery $(AQuery q) {
+    public AQuery $(AQuery q) {
         return q;
     }
 
@@ -49,7 +49,7 @@ public class $Fragment extends Fragment {
      * The selector to match. The syntax is the same as CSS-selectors.
      * For example : $("#my_id") will return the elements with the id R.id.my_id
      */
-    protected AQuery $(String selector) {
+    public AQuery $(String selector) {
         return aqFactory.$(selector);
     }
 
@@ -60,20 +60,20 @@ public class $Fragment extends Fragment {
      * @return
      * A reference to an AQuery containing the root of the document
      */
-    protected AQuery $(Runnable r) {
+    public AQuery $(Runnable r) {
         return aqFactory.$(r);
     }
 
     /**
      * Returns an AQuery containing the given view
      */
-    protected AQuery $(View element) {
+    public AQuery $(View element) {
         return aqFactory.$(element);
     }
     /**
      * Returns an AQuery containing the given list of views
      */
-    protected AQuery $(List<View> views) {
+    public AQuery $(List<View> views) {
         return aqFactory.$(views);
     }
 

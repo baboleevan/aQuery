@@ -12,23 +12,23 @@ import java.util.List;
  * Inherit your activity from this one to be be able to use it
  */
 public class $Activity extends Activity {
-    private $Constructors aqFactory = new $Constructors(this); // The object containing all useful methods to construct AQuery objects
+    private final $Constructors aqFactory = new $Constructors(this); // The object containing all useful methods to construct AQuery objects
 
-    protected static class $ extends $Utils {
+    public static class $ extends $Utils {
         public $(Activity ctx) {
             super(ctx);
         }
     }
 
-    protected $ $ = new $(this); // The object containing all useful functions
+    public final $ $ = new $(this); // The object containing all useful functions
 
     /**
      * Returns the AQuery element containing the root of the activity
      */
-    protected AQuery $() {
+    public AQuery $() {
         return aqFactory.$();
     }
-    protected AQuery $(AQuery q) {
+    public AQuery $(AQuery q) {
         return q;
     }
 
@@ -38,7 +38,7 @@ public class $Activity extends Activity {
      * The selector to match. The syntax is the same as CSS-selectors.
      * For example : $("#my_id") will return the elements with the id R.id.my_id
      */
-    protected AQuery $(String selector) {
+    public AQuery $(String selector) {
         return aqFactory.$(selector);
     }
 
@@ -49,20 +49,20 @@ public class $Activity extends Activity {
      * @return
      * A reference to an AQuery containing the root of the document
      */
-    protected AQuery $(Runnable r) {
+    public AQuery $(Runnable r) {
         return aqFactory.$(r);
     }
 
     /**
      * Returns an AQuery containing the given view
      */
-    protected AQuery $(View element) {
+    public AQuery $(View element) {
         return aqFactory.$(element);
     }
     /**
      * Returns an AQuery containing the given list of views
      */
-    protected AQuery $(List<View> views) {
+    public AQuery $(List<View> views) {
         return aqFactory.$(views);
     }
 
