@@ -26,6 +26,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.DigitsKeyListener;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -6592,7 +6593,7 @@ public abstract class AQuery {
     /**
      * Converts an element to a list containing the element
      */
-    protected <T> ArrayList<T> singleton(T elt) {
+    public static <T> ArrayList<T> singleton(T elt) {
         ArrayList<T> res = new ArrayList<>();
         res.add(elt);
         return res;
@@ -11191,7 +11192,7 @@ public abstract class AQuery {
         return new $Array(ctx,res);
     }
     /**
-     * Returns all the children and subchildren of the elements, plus the elements themself
+     * Returns all the children and subchildren of the elements, plus the elements themselves
      */
     public AQuery family() {
         List<View> res = new ArrayList<View>();

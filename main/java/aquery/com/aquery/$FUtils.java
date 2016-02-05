@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.os.Build;
 import android.view.View;
 
+import java.util.List;
+
 /**
  * The $Utils function adapted to Fragments
  */
@@ -30,7 +32,11 @@ public class $FUtils extends $Utils {
      */
     @Override
     public AQuery id(int id) {
-        return new $Piece(fragment).find(id);
+        AQuery q = root();
+        List<View> res = q.find(id).list();
+        if (q.id() == id)
+            res.add(0, q.head());
+        return new $Array(ctx,res);
     }
 
     /**
@@ -38,7 +44,7 @@ public class $FUtils extends $Utils {
      */
     @Override
     public AQuery all() {
-        return new $Piece(fragment).descendants();
+        return root().descendants();
     }
 
     /**

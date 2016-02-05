@@ -36,7 +36,7 @@ public class $Activity extends Activity {
      * Returns an AQuery element containing all the views matching the given filter selector
      * @param selector
      * The selector to match. The syntax is the same as CSS-selectors.
-     * For example : $("#my_id") will return the element with the id R.id.my_id
+     * For example : $("#my_id") will return the elements with the id R.id.my_id
      */
     protected AQuery $(String selector) {
         return aqFactory.$(selector);
