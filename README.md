@@ -101,7 +101,7 @@ $.confirm("Delete message ?", "Warning, this operation is irreversible", new Run
         // User confirmed
     });
 ```
-* Ask the user to enter an action :
+* Ask the user to enter a text :
 ```java
 $.prompt("Identity control", "Please enter your name", new PromptListener() {
     @Override
