@@ -301,7 +301,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin); // No perticular transition in the general case
+            return new NoTransition(end); // No perticular transition in the general case
         }
 
         @Override
@@ -389,7 +389,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
     /**
@@ -425,7 +425,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
     /**
@@ -443,7 +443,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
     /**
@@ -555,7 +555,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
     /**
@@ -573,7 +573,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
     /**
@@ -591,7 +591,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(begin);
+            return new NoTransition(end);
         }
     }
 
@@ -10186,7 +10186,7 @@ public abstract class AQuery {
             }
         }
     }
-    private static final Pattern DIMEN_MATCHER = Pattern.compile("^([0-9]*(?:\\.[0-9]*)?)([a-z]*)$");
+    private static final Pattern DIMEN_MATCHER = Pattern.compile("^(\\d*(?:\\.\\d*)?)([a-z]*)$");
     private float formatDimen(String text) {
         Matcher m = DIMEN_MATCHER.matcher(text);
         if (m.find())
@@ -10204,7 +10204,7 @@ public abstract class AQuery {
         return getIdentifier(ctx, text);
     }
     protected static int getIdentifier(Context ctx, String text) throws Resources.NotFoundException {
-        Matcher m = Pattern.compile("^@([a-z]+)/([a-zA-Z0-9_]+)$").matcher(text);
+        Matcher m = Pattern.compile("^@([a-z]+)/(\\w+)$").matcher(text);
         if (m.find())
             return ctx.getResources().getIdentifier(m.group(1), m.group(2), ctx.getPackageName());
         throw new Resources.NotFoundException("Unable to find resource \""+ text +"\"");
@@ -10213,14 +10213,14 @@ public abstract class AQuery {
         return getIdentifier(ctx, folder, text);
     }
     protected static int getIdentifier(Context ctx, String folder, String text) throws Resources.NotFoundException {
-        Matcher m = Pattern.compile("^@"+ folder +"/([a-zA-Z0-9_]+)$").matcher(text);
+        Matcher m = Pattern.compile("^@"+ folder +"/(\\w+)$").matcher(text);
         if (m.find())
             return ctx.getResources().getIdentifier(m.group(1), folder, ctx.getPackageName());
         throw new Resources.NotFoundException("Unable to find resource \""+ text +"\"");
     }
     private int formatColor(String text) {
-        String color = text.replaceAll("(?i)^#([0-9A-F])([0-9A-F])([0-9A-F])([0-9A-F])$", "#$1$1$2$2$3$3$4$4");
-        color = color.replaceAll("(?i)^#([0-9A-F])([0-9A-F])([0-9A-F])$", "#$1$1$2$2$3$3");
+        String color = text.replaceAll("(?i)^#([\\dA-F])([\\dA-F])([\\dA-F])([\\dA-F])$", "#$1$1$2$2$3$3$4$4");
+        color = color.replaceAll("(?i)^#([\\dA-F])([\\dA-F])([\\dA-F])$", "#$1$1$2$2$3$3");
         try {
             return Color.parseColor(color);
         }
@@ -10409,6 +10409,69 @@ public abstract class AQuery {
     }
 
     /**
+     * A class to handle C++-like linked list, with head and tail
+     */
+    public class $List<E> {
+        private E head;
+        private $List<E> tail;
+
+        public $List() {
+        }
+        public $List(E head, $List<E> tail) {
+            this.head = head;
+            this.tail = tail;
+        }
+
+        public $List(E[] array) {
+            for (int i=array.length-1;i>=0;i--)
+                add(array[i]);
+        }
+
+        public E head() {
+            return head;
+        }
+        public $List<E> tail() {
+            return tail;
+        }
+
+        public boolean add(E object) {
+            tail = new $List<E>(head,tail);
+            head = object;
+            return true;
+        }
+
+        public void clear() {
+            head = null;
+            tail = null;
+        }
+
+        public boolean contains(Object object) {
+            if (object == head)
+                return true;
+            if (isEmpty())
+                return false;
+            return tail.contains(object);
+        }
+
+        public boolean isEmpty() {
+            return (tail == null);
+        }
+
+        public E remove() {
+            E res = head;
+            head = tail.head;
+            tail = tail.tail;
+            return res;
+        }
+
+        public int size() {
+            if (isEmpty())
+                return 0;
+            return 1+tail.size();
+        }
+    }
+
+    /**
      * A class to handles the [attr="value"] CSS selector
      */
     private static class BracketAnalyser {
@@ -10510,7 +10573,7 @@ public abstract class AQuery {
             return valEndID;
         }
         public String getVal() {
-            return completeString.substring(valStartID,valEndID).replaceAll("\\\\([^a-z])", "$1");
+            return completeString.substring(valStartID,valEndID).replaceAll("\\\\(\\W)", "$1");
         }
         public char getFlag() {
             return flag;
@@ -10862,8 +10925,8 @@ public abstract class AQuery {
             return -1;
         return Integer.valueOf(coeff);
     }
-    private static final Pattern AFFINE_FUNC_MATCHER = Pattern.compile("^([+-]?[0-9]*)n([+-])([0-9]*)$");
-    private static final Pattern LINEAR_FUNC_MATCHER = Pattern.compile("^([+-]?[0-9]*)n$");
+    private static final Pattern AFFINE_FUNC_MATCHER = Pattern.compile("^([+-]?\\d*)n([+-])(\\d*)$");
+    private static final Pattern LINEAR_FUNC_MATCHER = Pattern.compile("^([+-]?\\d*)n$");
     /**
      * Format the coefficients of an expression of the form "bn+a" or "bn" or "a"
      * @param expression
@@ -11125,7 +11188,7 @@ public abstract class AQuery {
         }
         throw new IllegalArgumentException("Invalid selector \""+ selector +"\"");
     }
-    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^\\#:\\[]+)|(?:\\[[0-9]+\\])");
+    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^\\#:\\[]+)|(?:\\[\\d+\\])");
 
     /**
      * The listener for test-functions
@@ -11180,10 +11243,8 @@ public abstract class AQuery {
         catch (Exception e) {
             return res;
         }
-        for (int i=0;i<vGroup.getChildCount();i++) {
+        for (int i=0;i<vGroup.getChildCount();i++)
             res.add(vGroup.getChildAt(i));
-            res.addAll(getDescendants(vGroup.getChildAt(i)));
-        }
         return res;
     }
     /**
