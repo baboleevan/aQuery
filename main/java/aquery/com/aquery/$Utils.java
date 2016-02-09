@@ -10,6 +10,7 @@ import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -849,22 +850,6 @@ public class $Utils {
             }).show();
     }
 
-    public void prompt(String title, PromptListener callback) {
-        prompt(title, null, callback);
-    }
-    /**
-     * Shows a dialog box to ask the user to enter a text value
-     * @param title
-     * The title of the dialog box. May be null
-     * @param message
-     * The message to display. May be null
-     * @param callback
-     * The function to call when the user submits the dialog box
-     */
-    public void prompt(String title, String message, PromptListener callback) {
-        prompt(title, message, null, callback);
-    }
-
     /**
      * An interface to handle prompt() method
      */
@@ -886,6 +871,58 @@ public class $Utils {
      * Shows a dialog box to ask the user to enter a text value
      * @param title
      * The title of the dialog box. May be null
+     * @param callback
+     * The function to call when the user submits the dialog box
+     */
+    public void prompt(String title, PromptListener callback) {
+        prompt(title, null, callback);
+    }
+
+    /**
+     * Shows a dialog box to ask the user to enter a text value
+     * @param title
+     * The title of the dialog box. May be null
+     * @param inputType
+     * The type of content that the user can enter, such as InputType.TYPE_CLASS_NUMBER
+     * @param callback
+     * The function to call when the user submits the dialog box
+     */
+    public void prompt(String title, int inputType, PromptListener callback) {
+        prompt(title, null, inputType, callback);
+    }
+
+    /**
+     * Shows a dialog box to ask the user to enter a text value
+     * @param title
+     * The title of the dialog box. May be null
+     * @param message
+     * The message to display. May be null
+     * @param callback
+     * The function to call when the user submits the dialog box
+     */
+    public void prompt(String title, String message, PromptListener callback) {
+        prompt(title, message, null, callback);
+    }
+
+    /**
+     * Shows a dialog box to ask the user to enter a text value
+     * @param title
+     * The title of the dialog box. May be null
+     * @param message
+     * The message to display. May be null
+     * @param inputType
+     * The type of content that the user can enter, such as InputType.TYPE_CLASS_NUMBER
+     * @param callback
+     * The function to call when the user submits the dialog box
+     */
+    public void prompt(String title, String message, int inputType, PromptListener callback) {
+        prompt(title, message, null, inputType, callback);
+    }
+
+    /**
+     * Shows a dialog box to ask the user to enter a text value
+     * @param title
+     * The title of the dialog box. May be null
      * @param message
      * The message to display. May be null
      * @param defaut
@@ -894,9 +931,26 @@ public class $Utils {
      * The function to call when the user submits the dialog box
      */
     public void prompt(String title, String message, String defaut, final PromptListener callback) {
+        prompt(title,message,defaut, InputType.TYPE_CLASS_TEXT, callback);
+    }
+
+    /**
+     * Shows a dialog box to ask the user to enter a text value
+     * @param title
+     * The title of the dialog box. May be null
+     * @param message
+     * The message to display. May be null
+     * @param defaut
+     * The default value of the text entered by the user. May be null
+     * @param inputType
+     * The type of content that the user can enter, such as InputType.TYPE_CLASS_NUMBER
+     * @param callback
+     * The function to call when the user submits the dialog box
+     */
+    public void prompt(String title, String message, String defaut, int inputType, final PromptListener callback) {
         final AQuery promptView = create("EditText")
                 .lp("match_parent", "wrap_content")
-                .attr("inputType", "text")
+                .prop("inputType", inputType)
                 .prop("singleLine", true);
         if (defaut != null)
             promptView.val(defaut);
@@ -931,13 +985,13 @@ public class $Utils {
      */
     public interface ChoiceListener {
         /**
-         * Function called when the user chose something
+         * Function called when the user chosed somethin
          * @param id
          * The id of the item selected
          * @param choice
          * The text value of the item selected
          */
-        void onChoose(int id, String choice);
+        void onChose(int id, String choice);
 
         /**
          * Function called when the user cancelled his action
@@ -968,7 +1022,7 @@ public class $Utils {
         popup(title).setItems(choices, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                callback.onChoose(which, choices[which]);
+                callback.onChose(which, choices[which]);
             }
         }).setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
