@@ -115,13 +115,11 @@ public abstract class AQuery {
 
     /**
      * Returns the first View of the set of elements
-     * @return
      */
     public abstract View head();
 
     /**
      * Returns the first View of the set of elements, wrapped into a new AQuery instance
-     * @return
      */
     public AQuery first() {
         return new $Element(ctx,head());
@@ -6644,8 +6642,8 @@ public abstract class AQuery {
     /**
      * Converts an element to a list containing the element
      */
-    public static <T> ArrayList<T> singleton(T elt) {
-        ArrayList<T> res = new ArrayList<>();
+    public static <T> List<T> singleton(T elt) {
+        ArrayList<T> res = new ArrayList<>(1);
         res.add(elt);
         return res;
     }
@@ -8088,8 +8086,8 @@ public abstract class AQuery {
     /**
      * A class to handle animations parameters : duration, easing function, etc
      */
-	protected static class AnimationParams {
-		private ArrayList<PropertyTransition> transitions;
+    protected static class AnimationParams {
+        private ArrayList<PropertyTransition> transitions;
         private int timeMS;
         private EaseListener easing;
         private AnimationListener callbacks;
@@ -10536,7 +10534,7 @@ public abstract class AQuery {
         }
 
         public static ArrayList<BracketAnalyser> matchAll(String selector) {
-            ArrayList<BracketAnalyser> res = new ArrayList<BracketAnalyser>();
+            ArrayList<BracketAnalyser> res = new ArrayList<>();
             int bracketID = selector.indexOf('[');
             while (bracketID != -1) {
                 BracketAnalyser nextAnalyser = new BracketAnalyser(selector,bracketID);
@@ -10645,7 +10643,7 @@ public abstract class AQuery {
      */
     private AQuery findEach(String selector, List<BracketAnalyser> analyser) {
         String[] selectors = selector.split(" +");
-        FindListener l = find(new $List<String>(selectors),analyser);
+        ViewFinder l = find(new $List<>(selectors), analyser);
         return l.get(this);
     }
 
@@ -10663,26 +10661,10 @@ public abstract class AQuery {
     }
 
     /**
-     * Ad the views matching a given criteria
-     */
-    private static void addViewsMatching($Array nodes, View v, MatchListener subChecker, FindListener subFinder) {
-        $Element jElt = new $Element(nodes.ctx, v);
-        if (subChecker.match(jElt))
-            nodes.addAll(subFinder.get(jElt).list());
-    }
-
-    /**
-     * A listener to get the views matching a given criteria
-     */
-    private interface FindListener {
-        AQuery get(AQuery q);
-    }
-
-    /**
      * Returns the direct children of the elements
      */
-    private AQuery getDirectChildren(FindListener subFinder, MatchListener subChecker) {
-        $Array nodes = new $Array(ctx);
+    private AQuery getDirectChildren(ViewFinder subFinder, ViewChecker subChecker) {
+        List<View> res = new ArrayList<>();
         for (View element : list()) {
             ViewGroup vGroup;
             try {
@@ -10691,16 +10673,19 @@ public abstract class AQuery {
             catch (ClassCastException e) {
                 continue;
             }
-            for (int i=0;i<vGroup.getChildCount();i++)
-                addViewsMatching(nodes,vGroup.getChildAt(i),subChecker,subFinder);
+            for (int i=0;i<vGroup.getChildCount();i++) {
+                View v = vGroup.getChildAt(i);
+                if (subChecker.match(v))
+                    res.addAll(subFinder.get(new $Element(ctx, v)).list());
+            }
         }
-        return nodes;
+        return new $Array(ctx,res);
     }
     /**
      * Returns all children and subchildren of the elements
      */
-    private AQuery getAllChildren(FindListener subFinder, MatchListener subChecker) {
-        $Array nodes = new $Array(ctx);
+    private AQuery getAllChildren(ViewFinder subFinder, ViewChecker subChecker) {
+        List<View> res = new ArrayList<>();
         for (View element : list()) {
             ViewGroup vGroup;
             try {
@@ -10709,98 +10694,81 @@ public abstract class AQuery {
             catch (ClassCastException e) {
                 continue;
             }
-            for (View child : getDescendants(vGroup))
-                addViewsMatching(nodes,child,subChecker,subFinder);
+            for (View child : getDescendants(vGroup)) {
+                if (subChecker.match(child))
+                    res = union(res,subFinder.get(new $Element(ctx, child)).list());
+            }
         }
-        return nodes;
+        return new $Array(ctx,res);
     }
     /**
      * Returns the elements directly after the elements in the set of elements
      */
-    private AQuery getElementsAfter(FindListener subFinder, MatchListener subChecker) {
-        $Array nodes = new $Array(ctx);
+    private AQuery getElementsAfter(ViewFinder subFinder, ViewChecker subChecker) {
+        List<View> res = new ArrayList<>();
         for (View element : list()) {
             ViewGroup parent = (ViewGroup) element.getParent();
             int pos = findPosition(parent,element);
             pos++;
-            if (pos < parent.getChildCount())
-                addViewsMatching(nodes,parent.getChildAt(pos),subChecker,subFinder);
+            if (pos < parent.getChildCount()) {
+                View v = parent.getChildAt(pos);
+                if (subChecker.match(v))
+                    res.addAll(subFinder.get(new $Element(ctx, v)).list());
+            }
         }
-        return nodes;
+        return new $Array(ctx,res);
     }
     /**
      * Returns the elements directly before the elements in the set of elements
      */
-    private AQuery getElementsBefore(FindListener subFinder, MatchListener subChecker) {
-        $Array nodes = new $Array(ctx);
+    private AQuery getElementsBefore(ViewFinder subFinder, ViewChecker subChecker) {
+        List<View> res = new ArrayList<>();
         for (View element : list()) {
             ViewGroup parent = (ViewGroup) element.getParent();
             int pos = findPosition(parent,element);
-            if (pos > 0)
-                addViewsMatching(nodes,parent.getChildAt(pos-1),subChecker,subFinder);
+            if (pos > 0) {
+                View v = parent.getChildAt(pos-1);
+                if (subChecker.match(v))
+                    res.addAll(subFinder.get(new $Element(ctx, v)).list());
+            }
         }
-        return nodes;
+        return new $Array(ctx,res);
     }
 
     /**
      * Returns the function that will, for a given View check if the view matches the selectors
      */
-    protected static FindListener find($List<String> selectors, List<BracketAnalyser> analyser) {
+    protected ViewFinder find($List<String> selectors, List<BracketAnalyser> analyser) {
         if (selectors.isEmpty())
-            return new FindListener() {
-                @Override
-                public AQuery get(AQuery q) {
-                    return q;
-                }
-            };
+            return ALL_PASS_FINDER;
         else {
             final String firstSelector = selectors.head();
             selectors = selectors.tail();
             if (">".equals(firstSelector)) {
                 String secondSelector = selectors.head();
                 selectors = selectors.tail();
-                final FindListener subFinder = find(selectors, analyser);
-                final MatchListener subChecker = typeChecker(secondSelector, analyser);
-                return new FindListener() {
-                    @Override
-                    public AQuery get(AQuery q) {
-                        return q.getDirectChildren(subFinder,subChecker);
-                    }
-                };
+                ViewFinder subFinder = find(selectors, analyser);
+                ViewChecker subChecker = typeChecker(secondSelector, analyser);
+                return new DirectChildrenFinder(subFinder, subChecker);
             }
             else if ("+".equals(firstSelector)) {
                 String secondSelector = selectors.head();
                 selectors = selectors.tail();
-                final FindListener subFinder = find(selectors, analyser);
-                final MatchListener subChecker = typeChecker(secondSelector, analyser);
-                return new FindListener() {
-                    @Override
-                    public AQuery get(AQuery q) {
-                        return q.getElementsAfter(subFinder, subChecker);
-                    }
-                };
+                ViewFinder subFinder = find(selectors, analyser);
+                ViewChecker subChecker = typeChecker(secondSelector, analyser);
+                return new NextElementsFinder(subFinder, subChecker);
             }
             else if ("~".equals(firstSelector)) {
                 String secondSelector = selectors.head();
                 selectors = selectors.tail();
-                final FindListener subFinder = find(selectors, analyser);
-                final MatchListener subChecker = typeChecker(secondSelector, analyser);
-                return new FindListener() {
-                    @Override
-                    public AQuery get(AQuery q) {
-                        return q.getElementsBefore(subFinder, subChecker);
-                    }
-                };
+                ViewFinder subFinder = find(selectors, analyser);
+                ViewChecker subChecker = typeChecker(secondSelector, analyser);
+                return new PrevElementsFinder(subFinder, subChecker);
             }
             else {
-                final FindListener subFinder = find(selectors, analyser);
-                final MatchListener subChecker = typeChecker(firstSelector, analyser);
-                return new FindListener() {
-                    @Override
-                    public AQuery get(AQuery q) {
-                        return q.getAllChildren(subFinder, subChecker);
-                    }
-                };
+                ViewFinder subFinder = find(selectors, analyser);
+                ViewChecker subChecker = typeChecker(firstSelector, analyser);
+                return new ChildrenFinder(subFinder, subChecker);
             }
         }
     }
@@ -10827,92 +10795,38 @@ public abstract class AQuery {
         }
         return new $Array(ctx, res);
     }
-    /**
-     * The test function that always return true
-     */
-    private static final MatchListener ALWAYS_MATCH = new MatchListener() {
-        @Override
-        public boolean match($Element jElt) {
-            return true;
-        }
-    };
-    /**
-     * The test function that always return false
-     */
-    private static final MatchListener NEVER_MATCH = new MatchListener() {
-        @Override
-        public boolean match($Element jElt) {
-            return true;
-        }
-    };
 
     /**
      * Returns the test function that checks if a View has a given tag
      */
-    private static MatchListener tagChecker(String tag) {
+    private static ViewChecker tagChecker(String tag) {
         if ("*".equals(tag))
             return ALWAYS_MATCH;
-        final String vTag = tag;
-        return new MatchListener() {
-            @Override
-            public boolean match($Element jElt) {
-                return hasTag(jElt,vTag);
-            }
-        };
+        return new TagChecker(tag);
     }
     /**
      * Returns the test function that checks if a View has NOT a given tag
      */
-    private static MatchListener nottagChecker(String tag) {
+    private static ViewChecker nottagChecker(String tag) {
         if ("*".equals(tag))
             return NEVER_MATCH;
-        final String vTag = tag;
-        return new MatchListener() {
-            @Override
-            public boolean match($Element jElt) {
-                return !hasTag(jElt,vTag);
-            }
-        };
+        return new NotTagChecker(tag);
     }
 
     /**
      * Checks if a View has the given tag
      */
-    private static boolean hasTag($Element jElt, String tag) {
-        return jElt.head().getClass().getSimpleName().equals(tag);
+    private static boolean hasTag(View v, String tag) {
+        return v.getClass().getSimpleName().equals(tag);
     }
     /**
-     * Returns the function test that checks if an element has a given id
+     * Returns the test function that checks if a View has a given tag
      */
-    private static MatchListener idChecker(final String id) {
-        return new MatchListener() {
-            @Override
-            public boolean match($Element jElt) {
-                return hasId(jElt,id);
-            }
-        };
-    }
-    private static final Pattern ID_MATCHER = Pattern.compile(":id/(.+)$");
-    /**
-     * Checks if a View has the given id
-     */
-    private static boolean hasId($Element jElt, String id) {
-        View v = jElt.head();
-        if (v.getId() == View.NO_ID)
-            return false;
-        String vID;
-        try {
-            vID = v.getResources().getResourceName(v.getId());
-        }
-        catch (Resources.NotFoundException e) {
-            return false;
-        }
-        Matcher m = ID_MATCHER.matcher(vID);
-        if (m.find()) {
-            if (id.equals(m.group(1)))
-                return true;
-        }
-        return false;
+    private ViewChecker idChecker(String id) {
+        int res = ctx.getResources().getIdentifier(id, "id", ctx.getPackageName());
+        if (res != 0)
+            return new IdChecker(res);
+        return NEVER_MATCH;
     }
 
     /**
@@ -10959,13 +10873,6 @@ public abstract class AQuery {
         }
         return new int[]{a,b};
     }
-
-    /**
-     * Returns true if and only if the position can be written as coeffs[1]*k+coeffs[0] with k positive integer
-     */
-    private static boolean isNth(int position, int[] coeffs) {
-        return isNth(position, coeffs[0], coeffs[1]);
-    }
     /**
      * Returns true if and only if the position can be written as a*k+b with k positive integer
      */
@@ -10982,70 +10889,33 @@ public abstract class AQuery {
     private static final Pattern NTH_LAST_CHILD_MATCHER = Pattern.compile("^nth-last-child\\((.+)\\)$");
     private static final Pattern NOT_TAG_MATCHER = Pattern.compile("^not\\((.+)\\)$");
 
+    private static final HashMap<String,ViewChecker> CONDITION_CHECKERS = initConditionCheckers();
+    private static HashMap<String,ViewChecker> initConditionCheckers() {
+        HashMap<String,ViewChecker> res = new HashMap<String,ViewChecker>();
+        res.put("empty", new EmptyChecker());
+        res.put("first-child", new FirstChildChecker());
+        res.put("last-child", new LastChildChecker());
+        res.put("only-child", new OnlyChildChecker());
+        return res;
+    }
     /**
      * Returns the function that checks if a given View matches the filter condition
      * @param condition
      * The filter condition, like "empty", "first-child", etc
      */
-    private static MatchListener conditionChecker(String condition) {
-        if ("empty".equals(condition)) {
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    return (jElt.children().length() == 0);
-                }
-            };
-        } else if ("first-child".equals(condition)) {
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    return (findPosition(jElt.head()) == 0);
-                }
-            };
-        }
-        else if ("last-child".equals(condition)) {
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    return (findLastPosition(jElt.head()) == 1);
-                }
-            };
-        } else if ("only-child".equals(condition)) {
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    return (jElt.parent().children().length() == 1);
-                }
-            };
-        } else if ("root".equals(condition)) {
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    return (jElt.head() == new $Utils(jElt.ctx).root().head());
-                }
-            };
-        }
+    private ViewChecker conditionChecker(String condition) {
+        ViewChecker checker = CONDITION_CHECKERS.get(condition);
+        if (checker != null)
+            return checker;
+        else if ("root".equals(condition))
+            return new RootChecker(ctx);
         else {
             Matcher m = NTH_CHILD_MATCHER.matcher(condition);
-            if (m.find()) {
-                final int[] coeffs = formatCoeffs(m.group(1));
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return isNth(findPosition(jElt.head()) + 1, coeffs);
-                    }
-                };
-            }
+            if (m.find())
+                return new NthChildChecker(formatCoeffs(m.group(1)));
             m = NTH_LAST_CHILD_MATCHER.matcher(condition);
-            if (m.find()) {
-                final int[] coeffs = formatCoeffs(m.group(1));
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return isNth(findLastPosition(jElt.head()), coeffs);
-                    }
-                };
-            }
+            if (m.find())
+                return new NthLastChildChecker(formatCoeffs(m.group(1)));
             m = NOT_TAG_MATCHER.matcher(condition);
             if (m.find())
                 return nottagChecker(m.group(1));
@@ -11055,52 +10925,20 @@ public abstract class AQuery {
 
     /** Returns the function that checks if a View matches a "bracket" condition, like [attr="value"]
      */
-    private static MatchListener bracketChecker(BracketAnalyser analyser) {
-        final AttrSetter callback = getAttr(analyser.getAttr());
-        final String val = analyser.getVal();
+    private ViewChecker bracketChecker(BracketAnalyser analyser) {
         switch (analyser.getFlag()) {
             case 0 :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrEquals(jElt, callback, val);
-                    }
-                };
+                return new AttrEqualsChecker(ctx, analyser);
             case '|' :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrStarts(jElt, callback, val);
-                    }
-                };
+                return new AttrStartsChecker(ctx, analyser);
             case '~' :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrHas(jElt, callback, val);
-                    }
-                };
+                return new AttrHasChecker(ctx, analyser);
             case '^' :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrBegins(jElt, callback, val);
-                    }
-                };
+                return new AttrBeginsChecker(ctx, analyser);
             case '$' :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrEnds(jElt, callback, val);
-                    }
-                };
+                return new AttrEndsChecker(ctx, analyser);
             case '*' :
-                return new MatchListener() {
-                    @Override
-                    public boolean match($Element jElt) {
-                        return checkAttrContains(jElt, callback, val);
-                    }
-                };
+                return new AttrContainsChecker(ctx, analyser);
             default :
                 return null; // Dead code
         }
@@ -11176,7 +11014,7 @@ public abstract class AQuery {
     /**
      * Returns the function that checks if a selector matches a given filter condition, such as "TextView" or ":first-child"
      */
-    private static MatchListener selectorChecker(String selector, List<BracketAnalyser> analyser) {
+    private ViewChecker selectorChecker(String selector, List<BracketAnalyser> analyser) {
         String value;
         switch (selector.charAt(0)) {
             case '#' :
@@ -11188,53 +11026,421 @@ public abstract class AQuery {
         }
         throw new IllegalArgumentException("Invalid selector \""+ selector +"\"");
     }
-    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^\\#:\\[]+)|(?:\\[\\d+\\])");
 
     /**
-     * The listener for test-functions
+     * A class for test-functions used in find() method
      */
-    private interface MatchListener {
+    private abstract static class ViewChecker {
         /**
          * Checks if the given element matches the given condition
          * @return
          * true if it does, false otherwise
          */
-        boolean match($Element elt);
+        abstract boolean match(View elt);
+    }
+    /**
+     * A listener used in find() method to get the views matching a given criteria
+     */
+    private abstract static class ViewFinder {
+        /**
+         * Returns all the views that matched the given criteria, wrapped into an aQuery
+         * @param q
+         * The root aQuery who passes the test
+         */
+        abstract AQuery get(AQuery q);
     }
 
     /**
-     * Returns the function that checks if a selector matches a given set of conditions, such as "TextView#my_id:first-child"
+     * A ViewFinder class that returns all the given elements
      */
-    protected static MatchListener typeChecker(String expression, List<BracketAnalyser> analyser) {
+    private static class AllPassFinder extends ViewFinder {
+        @Override
+        public AQuery get(AQuery q) {
+            return q;
+        }
+    }
+    private static final AllPassFinder ALL_PASS_FINDER = new AllPassFinder();
+
+    /**
+     * A ViewFinder class that finds every direct child of the given elements
+     */
+    private static class DirectChildrenFinder extends ViewFinder {
+        private ViewFinder subFinder;
+        private ViewChecker subChecker;
+
+        public DirectChildrenFinder(ViewFinder subFinder, ViewChecker subChecker) {
+            this.subFinder = subFinder;
+            this.subChecker = subChecker;
+        }
+
+        @Override
+        public AQuery get(AQuery q) {
+            return q.getDirectChildren(subFinder, subChecker);
+        }
+    }
+    /**
+     * A ViewFinder class that returns every children and subchildren of the given elements
+     */
+    private static class ChildrenFinder extends ViewFinder {
+        private ViewFinder subFinder;
+        private ViewChecker subChecker;
+
+        public ChildrenFinder(ViewFinder subFinder, ViewChecker subChecker) {
+            this.subFinder = subFinder;
+            this.subChecker = subChecker;
+        }
+
+        @Override
+        public AQuery get(AQuery q) {
+            return q.getAllChildren(subFinder, subChecker);
+        }
+    }
+    /**
+     * A ViewFinder class that returns the direct next Element of the given elements
+     */
+    private static class NextElementsFinder extends ViewFinder {
+        private ViewFinder subFinder;
+        private ViewChecker subChecker;
+
+        public NextElementsFinder(ViewFinder subFinder, ViewChecker subChecker) {
+            this.subFinder = subFinder;
+            this.subChecker = subChecker;
+        }
+
+        @Override
+        public AQuery get(AQuery q) {
+            return q.getElementsAfter(subFinder, subChecker);
+        }
+    }
+    /**
+     * A ViewFinder class that returns the direct previous Element of the given elements
+     */
+    private static class PrevElementsFinder extends ViewFinder {
+        private ViewFinder subFinder;
+        private ViewChecker subChecker;
+
+        public PrevElementsFinder(ViewFinder subFinder, ViewChecker subChecker) {
+            this.subFinder = subFinder;
+            this.subChecker = subChecker;
+        }
+
+        @Override
+        public AQuery get(AQuery q) {
+            return q.getElementsBefore(subFinder, subChecker);
+        }
+    }
+
+    /**
+     * A ViewChecker class that check if a View matches all of the set of ViewChecker
+     */
+    private static class ViewCheckers extends ViewChecker {
+        private List<ViewChecker> selectors;
+
+        /**
+         * Constructor of ViewCheckers
+         * @param selectors
+         * The ViewChecker s to match. The match() function returns true if the view matches the
+         * selector, false otherwise
+         */
+        public ViewCheckers(List<ViewChecker> selectors) {
+            this.selectors = selectors;
+        }
+
+        @Override
+        public boolean match(View elt) {
+            for (ViewChecker selector : selectors) {
+                if (!selector.match(elt))
+                    return false;
+            }
+            return true;
+        }
+    }
+    /**
+     * The test function that always return true
+     */
+    private static class AllPassChecker extends ViewChecker {
+        public AllPassChecker() {
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return true;
+        }
+    }
+    private static final AllPassChecker ALWAYS_MATCH = new AllPassChecker();
+
+    /**
+     * The test function that always return false
+     */
+    private static class AllRejectChecker extends ViewChecker {
+        public AllRejectChecker() {
+        }
+        @Override
+        public boolean match(View elt) {
+            return false;
+        }
+    }
+    private static final AllRejectChecker NEVER_MATCH = new AllRejectChecker();
+
+    /**
+     * The ViewCheck that checks if a View has a given tag
+     */
+    private static class TagChecker extends ViewChecker {
+        private String tag;
+        public TagChecker(String tag) {
+            this.tag = tag;
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return hasTag(elt,tag);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View has NOT a given tag
+     */
+    private static class NotTagChecker extends ViewChecker {
+        private String tag;
+        public NotTagChecker(String tag) {
+            this.tag = tag;
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return !hasTag(elt,tag);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View has a given ID
+     */
+    private static class IdChecker extends ViewChecker {
+        private int id;
+        public IdChecker(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return (elt.getId() == id);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View has no children
+     */
+    private static class EmptyChecker extends ViewChecker {
+        @Override
+        public boolean match(View elt) {
+            try {
+                return (((ViewGroup) elt).getChildCount() == 0);
+            }
+            catch (ClassCastException e) {
+                return true;
+            }
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the first child of its parent
+     */
+    private static class FirstChildChecker extends ViewChecker {
+        @Override
+        public boolean match(View elt) {
+            return (findPosition(elt) == 0);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the last child of its parent
+     */
+    private static class LastChildChecker extends ViewChecker {
+        @Override
+        public boolean match(View elt) {
+            return (findLastPosition(elt) == 1);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the n-th child of its parent
+     */
+    private static class NthChildChecker extends ViewChecker {
+        private int a, b;
+        public NthChildChecker(int b, int a) {
+            this.a = a;
+            this.b = b;
+        }
+        public NthChildChecker(int[] coeffs) {
+            this(coeffs[1],coeffs[0]);
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return isNth(findPosition(elt) + 1, a,b);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the n-th last child of its parent
+     */
+    private static class NthLastChildChecker extends ViewChecker {
+        private int a, b;
+        public NthLastChildChecker(int b, int a) {
+            this.a = a;
+            this.b = b;
+        }
+        public NthLastChildChecker(int[] coeffs) {
+            this(coeffs[1],coeffs[0]);
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return isNth(findLastPosition(elt), a,b);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the only child of its parent
+     */
+    private static class OnlyChildChecker extends ViewChecker {
+        @Override
+        public boolean match(View elt) {
+            return (((ViewGroup) elt.getParent()).getChildCount() == 1);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View is the root View of the activity
+     */
+    private static class RootChecker extends ViewChecker {
+        public Activity ctx;
+        public RootChecker(Activity ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public boolean match(View elt) {
+            return (elt == new $Utils(ctx).root().head());
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute satisfy a given condition
+     */
+    private static abstract class AttrChecker extends ViewChecker {
+        protected AttrSetter callback;
+        protected String val;
+        private Activity ctx;
+
+        public AttrChecker(Activity ctx, String attr, String val) {
+            this.callback = getAttr(attr);
+            this.val = val;
+            this.ctx = ctx;
+        }
+        public AttrChecker(Activity ctx, BracketAnalyser analyser) {
+            this(ctx, analyser.getAttr(), analyser.getVal());
+        }
+        @Override
+        public boolean match(View elt) {
+            return match(new $Element(ctx,elt));
+        }
+        protected abstract boolean match($Element elt);
+    }
+    /**
+     * The ViewCheck that checks if a View has a given attribute
+     */
+    private static class AttrEqualsChecker extends AttrChecker {
+        public AttrEqualsChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrEquals(elt, callback, val);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute starts with a given word
+     */
+    private static class AttrStartsChecker extends AttrChecker {
+        public AttrStartsChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrStarts(elt, callback, val);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute contains with a given word
+     */
+    private static class AttrHasChecker extends AttrChecker {
+        public AttrHasChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrHas(elt, callback, val);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute starts with a given String
+     */
+    private static class AttrBeginsChecker extends AttrChecker {
+        public AttrBeginsChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrBegins(elt, callback, val);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute ends with a given String
+     */
+    private static class AttrEndsChecker extends AttrChecker {
+        public AttrEndsChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrEnds(elt, callback, val);
+        }
+    }
+    /**
+     * The ViewCheck that checks if a View's attribute contains a given String
+     */
+    private static class AttrContainsChecker extends AttrChecker {
+        public AttrContainsChecker(Activity ctx, BracketAnalyser analyser) {
+            super(ctx, analyser);
+        }
+
+        @Override
+        public boolean match($Element elt) {
+            return checkAttrContains(elt, callback, val);
+        }
+    }
+
+    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^\\#:\\[]+)|(?:\\[\\d+\\])");
+    /**
+     * Returns the ViewCheck that checks if a View matches a given set of conditions,
+     * such as "TextView#my_id:first-child"
+     */
+    private ViewChecker typeChecker(String expression, List<BracketAnalyser> analyser) {
         Matcher m = CONDITION_PATTERN.matcher(expression); // Getting each filter (like #id, :selector)
         if (m.find()) { // If there is at least one filter other than tag filter
-            final ArrayList<MatchListener> selectors = new ArrayList<>();
+            final ArrayList<ViewChecker> selectors = new ArrayList<>();
             if (m.start() != 0) { // If there is a tag filter (TextView, LinearLayout, etc)
-                String viewTag = expression.substring(0,m.start()); // The tag name
+                String viewTag = expression.substring(0, m.start()); // The tag name
                 selectors.add(tagChecker(viewTag));
             }
             do { // For each filter, check if the view matches the condition
                 selectors.add(selectorChecker(m.group(), analyser));
             } while (m.find());
-            return new MatchListener() {
-                @Override
-                public boolean match($Element jElt) {
-                    for (MatchListener selector : selectors) {
-                        if (!selector.match(jElt))
-                            return false;
-                    }
-                    return true;
-                }
-            };
-        }
-        else
+            return new ViewCheckers(selectors);
+        } else
             return tagChecker(expression);
     }
 
     /**
      * Returns all the direct children of a given view
      */
-    protected static ArrayList<View> getChildren(View v) {
+    protected static List<View> getChildren(View v) {
         ArrayList<View> res = new ArrayList<>();
         ViewGroup vGroup;
         try {
@@ -11250,7 +11456,7 @@ public abstract class AQuery {
     /**
      * Returns all the children and subchildren of a given view
      */
-    protected static ArrayList<View> getDescendants(View v) {
+    protected static List<View> getDescendants(View v) {
         ArrayList<View> res = new ArrayList<>();
         ViewGroup vGroup;
         try {
@@ -11268,7 +11474,7 @@ public abstract class AQuery {
     /**
      * Returns all the children and subchildren of a given view, plus the view itself
      */
-    protected static ArrayList<View> getFamily(View v) {
+    protected static List<View> getFamily(View v) {
         ArrayList<View> res = new ArrayList<>();
         res.add(v);
         res.addAll(getDescendants(v));
@@ -11293,6 +11499,17 @@ public abstract class AQuery {
         for (View v : views)
             res.add(((ViewGroup) v).getChildAt(i));
         return new $Array(ctx,res);
+    }
+    /**
+     * Returns the number of children of the first element in the set of elements
+     */
+    public int childCount() {
+        try {
+            return ((ViewGroup) head()).getChildCount();
+        }
+        catch (ClassCastException e) {
+            return 0;
+        }
     }
     /**
      * Returns all the children and subchildren of the elements
