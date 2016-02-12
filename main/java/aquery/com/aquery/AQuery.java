@@ -6820,6 +6820,14 @@ public abstract class AQuery {
     }
 
     /**
+     * Triggers a long click on the elements
+     */
+    public AQuery longClick() {
+        for (View v : list())
+            v.performLongClick();
+        return this;
+    }
+    /**
      * Sets the function to be called when the user long-clicks on one of the elements
      * @param l
      * The function to call on click
@@ -6827,6 +6835,17 @@ public abstract class AQuery {
     public AQuery longClick(View.OnLongClickListener l) {
         for (View v : list())
             v.setOnLongClickListener(l);
+        return this;
+    }
+    /**
+     * Sets the function to be called when a generic motion event is sent to the View
+     * @param l
+     * The function to call on motion
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+    public AQuery motion(View.OnGenericMotionListener l) {
+        for (View v : list())
+            v.setOnGenericMotionListener(l);
         return this;
     }
     /**
@@ -6916,6 +6935,11 @@ public abstract class AQuery {
         hideKeyboard();
         return this;
     }
+    /**
+     * Shows the software keyboard to the screen
+     * Assumes that the first element in the set of elements already has the focus
+     * If it's not the case, call focus(true) instead
+     */
     public void showKeyboard() {
         showKeyboard(0);
     }
@@ -6981,10 +7005,480 @@ public abstract class AQuery {
         return this;
     }
 
+    /**
+     * Sets the function to be called when the user checks/unchecks one of the elements
+     * @param l
+     * The function to call on check change
+     */
     public AQuery check(CompoundButton.OnCheckedChangeListener l) {
         for (View v : list())
             ((CompoundButton) v).setOnCheckedChangeListener(l);
         return this;
+    }
+    /**
+     * Sets the function to be called when the user checks/unchecks one of the elements
+     * Works only on Radio Groups
+     * @param l
+     * The function to call on check change
+     */
+    public AQuery check(RadioGroup.OnCheckedChangeListener l) {
+        for (View v : list())
+            ((RadioGroup) v).setOnCheckedChangeListener(l);
+        return this;
+    }
+
+    /**
+     * Sets the function to be called when the user scrolls over one of the elements
+     * @param l
+     * The function to call on scroll
+     */
+    public AQuery scroll(ViewTreeObserver.OnScrollChangedListener l) {
+        for (View v : list())
+            v.getViewTreeObserver().addOnScrollChangedListener(l);
+        return this;
+    }
+
+    /**
+     * Sets the function to be called when the user drags over one of the elements
+     * @param l
+     * The function to call on drag
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public AQuery drag(View.OnDragListener l) {
+        for (View v : list())
+            v.setOnDragListener(l);
+        return this;
+    }
+
+    public interface SwippedListener {
+        /**
+         * The function called when a View
+         * @param v
+         * The view swipped
+         * @param unSwipe
+         * A runnable to call if you want to unswipe the view
+         * For example, use it if you want to make a dialog box to ask the user to confirm the removal
+         * In that case, you will call unSwipe.run() if the user cancels
+         */
+        void onSwipped(View v, Runnable unSwipe);
+    }
+    public interface StartStopSwipeListener extends SwippedListener {
+        /**
+         * The function called when the user starts swipping
+         */
+        void onStartSwipping(View v);
+    }
+    public interface SwippingListener extends StartStopSwipeListener {
+        /**
+         * The function called when the user is swipping
+         * @param v
+         * The view swipped
+         * @param progress
+         * A number characterizing how far the View is from its starting point :
+         * 0 when the View is at its starting point, 1 when the View is out of the screen
+         */
+        void onSwipping(View v, float progress);
+        /**
+         * The function called when a swipe is cancelled and the view is returning to its starting point
+         * @param v
+         * The view swipped
+         * @param fromUser
+         * true if it's the user who cancelled the swipe because he released the View too early
+         * false if it's the unSwip runnable from onSwipped() method that is responsible from the unswipping
+         */
+        void onUnSwipe(View v, boolean fromUser);
+        /**
+         * The function called when the user is unswipping after a swipe cancel
+         * @param v
+         * The view swipped
+         * @param progress
+         * A number characterizing how far the View is from its starting point :
+         * 0 when the View is at its starting point, 1 when the View is out of the screen
+         * @param fromUser
+         * true if it's the user who cancelled the swipe because he released the View too early
+         * false if it's the unSwip runnable from onSwipped() method that is responsible from the unswipping
+         */
+        void onUnSwipping(View v, float progress, boolean fromUser);
+        /**
+         * The function called when a swipe is cancelled and the view has finished returning to its starting point
+         * @param v
+         * The view swipped
+         * @param fromUser
+         * true if it's the user who cancelled the swipe because he released the View too early
+         * false if it's the unSwip runnable from onSwipped() method that is responsible from the unswipping
+         */
+        void onUnSwipped(View v, boolean fromUser);
+    }
+    public interface TouchSwipeListener extends SwippedListener {
+        /**
+         * The function called when the user starts touching the view
+         /**
+         * The function called when a swipe is cancelled and the view has finished returning to its starting point
+         * @param v
+         * The view swipped
+         * @param event
+         * The MotionEvent implied
+         */
+        void onTouchDown(View v, MotionEvent event);
+        /**
+         * The function called when the user stops touching the view
+         * @param v
+         * The view swipped
+         * @param event
+         * The MotionEvent implied
+         * @param swipped
+         * true if the user started swipping, false otherwise
+         */
+        void onTouchUp(View v, MotionEvent event, boolean swipped);
+    }
+    public interface TouchedSwipeListener extends TouchSwipeListener,StartStopSwipeListener {
+    }
+    /**
+     * An interface used for swiping events
+     */
+    public interface SwipeListener extends SwippingListener,TouchSwipeListener {
+    }
+    private SwipeListener toSwipeListener(final SwippedListener l) {
+        return new SwipeListener() {
+            @Override
+            public void onSwipped(View v, Runnable unSwipe) {
+                l.onSwipped(v, unSwipe);
+            }
+            @Override
+            public void onTouchDown(View v, MotionEvent event) {
+            }
+            @Override
+            public void onTouchUp(View v, MotionEvent event, boolean swipped) {
+            }
+            @Override
+            public void onStartSwipping(View v) {
+            }
+            @Override
+            public void onSwipping(View v, float progress) {
+            }
+            @Override
+            public void onUnSwipe(View v, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipped(View v, boolean fromUser) {
+            }
+        };
+    }
+    private SwipeListener toSwipeListener(final StartStopSwipeListener l) {
+        return new SwipeListener() {
+            @Override
+            public void onSwipped(View v, Runnable unSwipe) {
+                l.onSwipped(v, unSwipe);
+            }
+            @Override
+            public void onTouchDown(View v, MotionEvent event) {
+            }
+            @Override
+            public void onTouchUp(View v, MotionEvent event, boolean swipped) {
+            }
+            @Override
+            public void onStartSwipping(View v) {
+                l.onStartSwipping(v);
+            }
+            @Override
+            public void onSwipping(View v, float progress) {
+            }
+            @Override
+            public void onUnSwipe(View v, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipped(View v, boolean fromUser) {
+            }
+        };
+    }
+    private SwipeListener toSwipeListener(final SwippingListener l) {
+        return new SwipeListener() {
+            @Override
+            public void onSwipped(View v, Runnable unSwipe) {
+                l.onSwipped(v, unSwipe);
+            }
+            @Override
+            public void onTouchDown(View v, MotionEvent event) {
+            }
+            @Override
+            public void onTouchUp(View v, MotionEvent event, boolean swipped) {
+            }
+            @Override
+            public void onStartSwipping(View v) {
+                l.onStartSwipping(v);
+            }
+            @Override
+            public void onSwipping(View v, float progress) {
+                l.onSwipping(v, progress);
+            }
+            @Override
+            public void onUnSwipe(View v, boolean fromUser) {
+                l.onUnSwipe(v, fromUser);
+            }
+            @Override
+            public void onUnSwipping(View v, float progress, boolean fromUser) {
+                l.onUnSwipping(v, progress, fromUser);
+            }
+            @Override
+            public void onUnSwipped(View v, boolean fromUser) {
+                l.onUnSwipped(v, fromUser);
+            }
+        };
+    }
+    private SwipeListener toSwipeListener(final TouchSwipeListener l) {
+        return new SwipeListener() {
+            @Override
+            public void onSwipped(View v, Runnable unSwipe) {
+                l.onSwipped(v, unSwipe);
+            }
+            @Override
+            public void onTouchDown(View v, MotionEvent event) {
+                l.onTouchDown(v, event);
+            }
+            @Override
+            public void onTouchUp(View v, MotionEvent event, boolean swipped) {
+                l.onTouchUp(v, event, swipped);
+            }
+            @Override
+            public void onStartSwipping(View v) {
+            }
+            @Override
+            public void onSwipping(View v, float progress) {
+            }
+            @Override
+            public void onUnSwipe(View v, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipped(View v, boolean fromUser) {
+            }
+        };
+    }
+    private SwipeListener toSwipeListener(final TouchedSwipeListener l) {
+        return new SwipeListener() {
+            @Override
+            public void onSwipped(View v, Runnable unSwipe) {
+                l.onSwipped(v, unSwipe);
+            }
+            @Override
+            public void onTouchDown(View v, MotionEvent event) {
+                l.onTouchDown(v, event);
+            }
+            @Override
+            public void onTouchUp(View v, MotionEvent event, boolean swipped) {
+                l.onTouchUp(v, event, swipped);
+            }
+            @Override
+            public void onStartSwipping(View v) {
+                l.onStartSwipping(v);
+            }
+            @Override
+            public void onSwipping(View v, float progress) {
+            }
+            @Override
+            public void onUnSwipe(View v, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            }
+            @Override
+            public void onUnSwipped(View v, boolean fromUser) {
+            }
+        };
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swippedEvent
+     * The event called when the user has finished swiped one of the element
+     */
+    public AQuery swipe(final SwippedListener swippedEvent) {
+        return swipe(toSwipeListener(swippedEvent));
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swipeEvent
+     * The event called when the user starts or finished swipping
+     */
+    public AQuery swipe(final StartStopSwipeListener swipeEvent) {
+        return swipe(toSwipeListener(swipeEvent));
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swipeEvent
+     * The event called when the user is swipping
+     */
+    public AQuery swipe(final SwippingListener swipeEvent) {
+        return swipe(toSwipeListener(swipeEvent));
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swipeEvent
+     * The event called when the user swiped or touches thi view
+     */
+    public AQuery swipe(final TouchSwipeListener swipeEvent) {
+        return swipe(toSwipeListener(swipeEvent));
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swipeEvent
+     * The event called when the user starts/stops swipping or touches thi view
+     */
+    public AQuery swipe(final TouchedSwipeListener swipeEvent) {
+        return swipe(toSwipeListener(swipeEvent));
+    }
+    /**
+     * Call an event when the user swipes an element to the left or the right of the screen
+     * /!\ Works only if the View LayoutParams supports margin attributes
+     * @param swipeEvent
+     * The event called when the an event related to swipe happens
+     */
+    public AQuery swipe(final SwipeListener swipeEvent) {
+        for (View v : list()) {
+            // This code comes from another project. It works, sorry for the absence of comments
+            final float[] xFingerDown = new float[1];
+            final long[] tFingerDown = new long[1];
+            final boolean[] startedMoving = new boolean[1];
+            final int[] exitID = new int[1];
+            final boolean[] longClicked = {false};
+            ViewGroup.MarginLayoutParams currentMargins = mlp(v);
+            final ViewGroup.MarginLayoutParams initialMargins = new ViewGroup.MarginLayoutParams(currentMargins.width,currentMargins.height);
+            initialMargins.leftMargin = currentMargins.leftMargin;
+            initialMargins.rightMargin = currentMargins.rightMargin;
+            v.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(final View swippingDiv, MotionEvent event) {
+                    $Element elt = new $Element(ctx,swippingDiv);
+                    float xFinger = event.getX() + elt.offsetLeft();
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        longClicked[0] = false;
+                        xFingerDown[0] = xFinger;
+                        tFingerDown[0] = System.currentTimeMillis();
+                        startedMoving[0] = false;
+                        stopReplacingAfterSwipe(swippingDiv, initialMargins);
+                        swippingDiv.getParent().requestDisallowInterceptTouchEvent(true);
+                        swipeEvent.onTouchDown(swippingDiv, event);
+                        final int aExitID = exitID[0];
+                        swippingDiv.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if ((exitID[0] == aExitID) && !startedMoving[0]) {
+                                    if (swippingDiv.performLongClick())
+                                        longClicked[0] = true;
+                                }
+                            }
+                        }, ViewConfiguration.getLongPressTimeout());
+                    } else {
+                        if (longClicked[0]) {
+                            swipeEvent.onTouchUp(swippingDiv,event, false);
+                            return false;
+                        } else {
+                            float deltaXf = (xFinger - xFingerDown[0]);
+                            if (!startedMoving[0]) {
+                                float x0 = getSwipeWidth(swippingDiv) * 0.1f;
+                                if (Math.abs(deltaXf) > x0) {
+                                    swipeEvent.onStartSwipping(swippingDiv);
+                                    startedMoving[0] = true;
+                                }
+                            }
+                            if (startedMoving[0]) {
+                                placeSwippingDiv(swippingDiv, initialMargins, deltaXf);
+                                swipeEvent.onSwipping(swippingDiv, getSwipeProgress(swippingDiv, deltaXf));
+                                if (event.getAction() != MotionEvent.ACTION_MOVE) {
+                                    float xSpeed = 1000f * (xFinger - xFingerDown[0]) / (System.currentTimeMillis() - tFingerDown[0]);
+                                    float xMin = getSwipeWidth(swippingDiv) * 0.6f, t0 = 0.15f;
+                                    float xf = xFinger-xFingerDown[0] + xSpeed * t0;
+                                    if (((xf > xMin) || (xf < -xMin)) && ((event.getAction() == MotionEvent.ACTION_UP) || (event.getAction() == MotionEvent.ACTION_CANCEL))) {
+                                        final float nDeltaXf = deltaXf;
+                                        swipeEvent.onSwipped(swippingDiv, new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                swipeEvent.onUnSwipe(swippingDiv,false);
+                                                replaceSwippingDiv(swippingDiv, initialMargins, nDeltaXf, swipeEvent,false);
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        swipeEvent.onUnSwipe(swippingDiv,false);
+                                        replaceSwippingDiv(swippingDiv, initialMargins, deltaXf, swipeEvent, true);
+                                    }
+                                }
+                            }
+                            if (event.getAction() != MotionEvent.ACTION_MOVE) {
+                                exitID[0]++;
+                                swipeEvent.onTouchUp(swippingDiv,event, startedMoving[0]);
+                                if (event.getAction() == MotionEvent.ACTION_UP) {
+                                    if (!startedMoving[0] && isPointInsideView(event.getX(), event.getY(), swippingDiv))
+                                        swippingDiv.performClick();
+                                }
+                            }
+                        }
+                    }
+                    return true;
+                }
+            });
+        }
+        return this;
+    }
+    private static int nbReplacesAfterSwipe = 0;
+    private static View divReplacingAfterSwipe;
+    private static void stopReplacingAfterSwipe(View swippingDiv, ViewGroup.MarginLayoutParams initialMargins) {
+        if (divReplacingAfterSwipe != null) {
+            nbReplacesAfterSwipe++;
+            if (swippingDiv != divReplacingAfterSwipe)
+                placeSwippingDiv(divReplacingAfterSwipe, initialMargins, 0);
+        }
+    }
+    private static void placeSwippingDiv(View swippingDiv, ViewGroup.MarginLayoutParams initialMargins, float deltaXf) {
+        ViewGroup.MarginLayoutParams questionDivLP = (ViewGroup.MarginLayoutParams) swippingDiv.getLayoutParams();
+        int deltaXInt = Math.round(deltaXf);
+        if (deltaXf > 0) {
+            questionDivLP.rightMargin = initialMargins.rightMargin-deltaXInt;
+            questionDivLP.leftMargin = initialMargins.leftMargin+deltaXInt;
+        } else {
+            questionDivLP.leftMargin = initialMargins.rightMargin+deltaXInt;
+            questionDivLP.rightMargin = initialMargins.leftMargin-deltaXInt;
+        }
+        swippingDiv.setLayoutParams(questionDivLP);
+    }
+    private static void replaceSwippingDiv(final View swippingDiv, final ViewGroup.MarginLayoutParams initialMargins, final float deltaXf, final SwipeListener callback, final boolean fromUser) {
+        callback.onUnSwipping(swippingDiv, getSwipeProgress(swippingDiv,deltaXf), fromUser); // TODO
+        divReplacingAfterSwipe = swippingDiv;
+        final int replaceID = nbReplacesAfterSwipe;
+        final float nDeltaX = deltaXf - 0.08f*getSwipeWidth(swippingDiv)*Math.signum(deltaXf);
+        if (((nDeltaX > 0) && (deltaXf > 0)) || ((nDeltaX < 0) && (deltaXf < 0))) {
+            swippingDiv.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (replaceID == nbReplacesAfterSwipe) {
+                        placeSwippingDiv(swippingDiv, initialMargins, nDeltaX);
+                        replaceSwippingDiv(swippingDiv, initialMargins, nDeltaX, callback,fromUser);
+                    }
+                }
+            }, TPF);
+        }
+        else {
+            placeSwippingDiv(swippingDiv, initialMargins, 0);
+            callback.onUnSwipped(swippingDiv, fromUser);
+        }
+    }
+    private static float getSwipeProgress(View swippingDiv, float deltaXf) {
+        return Math.min(Math.max(Math.abs(deltaXf)/getSwipeWidth(swippingDiv), 0f), 1f);
+    }
+    private static int getSwipeWidth(View swippingDiv) {
+        return swippingDiv.getWidth();
     }
 
     /**
@@ -6998,7 +7492,8 @@ public abstract class AQuery {
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public AQuery scrollLeft(int x) {
-        head().setScrollX(x);
+        for (View v : list())
+            v.setScrollX(x);
         return this;
     }
     /**
@@ -7012,7 +7507,17 @@ public abstract class AQuery {
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public AQuery scrollTop(int y) {
-        head().setScrollY(y);
+        for (View v : list())
+            v.setScrollY(y);
+        return this;
+    }
+    /**
+     * Sets the current horizontal and vertical position of the scroll bar for each element
+     */
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    public AQuery scroll(int x, int y) {
+        scrollLeft(x);
+        scrollTop(y);
         return this;
     }
 
@@ -8232,6 +8737,7 @@ public abstract class AQuery {
         }
     }
 
+    protected static final int TPF = 40; // Time Per Frame for animations, in ms
     private static final int DEFAULT_DELAY = 400; // Default time for animations
     private static final String DEFAULT_EASING = EaseListener.SWING; // Default easing function
     private static final HashMap<String,EaseListener> easingFunctions = initEasings(); // The list of easing functions

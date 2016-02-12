@@ -192,7 +192,6 @@ public class $Element extends AQuery {
         parameters.start(this);
         animateAux(parameters, 0);
     }
-    private static final int TPF = 40; // Time Per Frame for animations, in ms
 
     /**
      * An auxiliary function to launchAnimate. Process each step of the animation
