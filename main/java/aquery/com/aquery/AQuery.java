@@ -7052,15 +7052,17 @@ public abstract class AQuery {
 
     public interface SwippedListener {
         /**
-         * The function called when a View
+         * The function called when the user swipped the View completely
          * @param v
          * The view swipped
+         * @param right
+         * true if the user swipped to the right, false if he swipped to the left
          * @param unSwipe
          * A runnable to call if you want to unswipe the view
          * For example, use it if you want to make a dialog box to ask the user to confirm the removal
          * In that case, you will call unSwipe.run() if the user cancels
          */
-        void onSwipped(View v, Runnable unSwipe);
+        void onSwipped(View v, boolean right, Runnable unSwipe);
     }
     public interface StartStopSwipeListener extends SwippedListener {
         /**
@@ -7075,9 +7077,11 @@ public abstract class AQuery {
          * The view swipped
          * @param progress
          * A number characterizing how far the View is from its starting point :
+         * @param right
+         * true if the user is swipping to the right, false if he is swipping to the left
          * 0 when the View is at its starting point, 1 when the View is out of the screen
          */
-        void onSwipping(View v, float progress);
+        void onSwipping(View v, float progress, boolean right);
         /**
          * The function called when a swipe is cancelled and the view is returning to its starting point
          * @param v
@@ -7094,11 +7098,13 @@ public abstract class AQuery {
          * @param progress
          * A number characterizing how far the View is from its starting point :
          * 0 when the View is at its starting point, 1 when the View is out of the screen
+         * @param right
+         * true if the user swipped to the right, false if he swipped to the left
          * @param fromUser
          * true if it's the user who cancelled the swipe because he released the View too early
          * false if it's the unSwip runnable from onSwipped() method that is responsible from the unswipping
          */
-        void onUnSwipping(View v, float progress, boolean fromUser);
+        void onUnSwipping(View v, float progress, boolean right, boolean fromUser);
         /**
          * The function called when a swipe is cancelled and the view has finished returning to its starting point
          * @param v
@@ -7141,8 +7147,8 @@ public abstract class AQuery {
     private SwipeListener toSwipeListener(final SwippedListener l) {
         return new SwipeListener() {
             @Override
-            public void onSwipped(View v, Runnable unSwipe) {
-                l.onSwipped(v, unSwipe);
+            public void onSwipped(View v, boolean right, Runnable unSwipe) {
+                l.onSwipped(v,right, unSwipe);
             }
             @Override
             public void onTouchDown(View v, MotionEvent event) {
@@ -7154,13 +7160,13 @@ public abstract class AQuery {
             public void onStartSwipping(View v) {
             }
             @Override
-            public void onSwipping(View v, float progress) {
+            public void onSwipping(View v, float progress, boolean right) {
             }
             @Override
             public void onUnSwipe(View v, boolean fromUser) {
             }
             @Override
-            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            public void onUnSwipping(View v, float progress, boolean right, boolean fromUser) {
             }
             @Override
             public void onUnSwipped(View v, boolean fromUser) {
@@ -7170,8 +7176,8 @@ public abstract class AQuery {
     private SwipeListener toSwipeListener(final StartStopSwipeListener l) {
         return new SwipeListener() {
             @Override
-            public void onSwipped(View v, Runnable unSwipe) {
-                l.onSwipped(v, unSwipe);
+            public void onSwipped(View v, boolean right, Runnable unSwipe) {
+                l.onSwipped(v,right, unSwipe);
             }
             @Override
             public void onTouchDown(View v, MotionEvent event) {
@@ -7184,13 +7190,13 @@ public abstract class AQuery {
                 l.onStartSwipping(v);
             }
             @Override
-            public void onSwipping(View v, float progress) {
+            public void onSwipping(View v, float progress, boolean right) {
             }
             @Override
             public void onUnSwipe(View v, boolean fromUser) {
             }
             @Override
-            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            public void onUnSwipping(View v, float progress, boolean right, boolean fromUser) {
             }
             @Override
             public void onUnSwipped(View v, boolean fromUser) {
@@ -7200,8 +7206,8 @@ public abstract class AQuery {
     private SwipeListener toSwipeListener(final SwippingListener l) {
         return new SwipeListener() {
             @Override
-            public void onSwipped(View v, Runnable unSwipe) {
-                l.onSwipped(v, unSwipe);
+            public void onSwipped(View v, boolean right, Runnable unSwipe) {
+                l.onSwipped(v,right, unSwipe);
             }
             @Override
             public void onTouchDown(View v, MotionEvent event) {
@@ -7214,16 +7220,16 @@ public abstract class AQuery {
                 l.onStartSwipping(v);
             }
             @Override
-            public void onSwipping(View v, float progress) {
-                l.onSwipping(v, progress);
+            public void onSwipping(View v, float progress, boolean right) {
+                l.onSwipping(v, progress,right);
             }
             @Override
             public void onUnSwipe(View v, boolean fromUser) {
                 l.onUnSwipe(v, fromUser);
             }
             @Override
-            public void onUnSwipping(View v, float progress, boolean fromUser) {
-                l.onUnSwipping(v, progress, fromUser);
+            public void onUnSwipping(View v, float progress, boolean right, boolean fromUser) {
+                l.onUnSwipping(v, progress,right, fromUser);
             }
             @Override
             public void onUnSwipped(View v, boolean fromUser) {
@@ -7234,8 +7240,8 @@ public abstract class AQuery {
     private SwipeListener toSwipeListener(final TouchSwipeListener l) {
         return new SwipeListener() {
             @Override
-            public void onSwipped(View v, Runnable unSwipe) {
-                l.onSwipped(v, unSwipe);
+            public void onSwipped(View v, boolean right, Runnable unSwipe) {
+                l.onSwipped(v,right, unSwipe);
             }
             @Override
             public void onTouchDown(View v, MotionEvent event) {
@@ -7249,13 +7255,13 @@ public abstract class AQuery {
             public void onStartSwipping(View v) {
             }
             @Override
-            public void onSwipping(View v, float progress) {
+            public void onSwipping(View v, float progress, boolean right) {
             }
             @Override
             public void onUnSwipe(View v, boolean fromUser) {
             }
             @Override
-            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            public void onUnSwipping(View v, float progress, boolean right, boolean fromUser) {
             }
             @Override
             public void onUnSwipped(View v, boolean fromUser) {
@@ -7265,8 +7271,8 @@ public abstract class AQuery {
     private SwipeListener toSwipeListener(final TouchedSwipeListener l) {
         return new SwipeListener() {
             @Override
-            public void onSwipped(View v, Runnable unSwipe) {
-                l.onSwipped(v, unSwipe);
+            public void onSwipped(View v, boolean right, Runnable unSwipe) {
+                l.onSwipped(v,right, unSwipe);
             }
             @Override
             public void onTouchDown(View v, MotionEvent event) {
@@ -7281,13 +7287,13 @@ public abstract class AQuery {
                 l.onStartSwipping(v);
             }
             @Override
-            public void onSwipping(View v, float progress) {
+            public void onSwipping(View v, float progress, boolean right) {
             }
             @Override
             public void onUnSwipe(View v, boolean fromUser) {
             }
             @Override
-            public void onUnSwipping(View v, float progress, boolean fromUser) {
+            public void onUnSwipping(View v, float progress, boolean right, boolean fromUser) {
             }
             @Override
             public void onUnSwipped(View v, boolean fromUser) {
@@ -7395,14 +7401,14 @@ public abstract class AQuery {
                             }
                             if (startedMoving[0]) {
                                 placeSwippingDiv(swippingDiv, initialMargins, deltaXf);
-                                swipeEvent.onSwipping(swippingDiv, getSwipeProgress(swippingDiv, deltaXf));
+                                swipeEvent.onSwipping(swippingDiv, getSwipeProgress(swippingDiv, deltaXf), (deltaXf>0f));
                                 if (event.getAction() != MotionEvent.ACTION_MOVE) {
                                     float xSpeed = 1000f * (xFinger - xFingerDown[0]) / (System.currentTimeMillis() - tFingerDown[0]);
                                     float xMin = getSwipeWidth(swippingDiv) * 0.6f, t0 = 0.15f;
                                     float xf = xFinger-xFingerDown[0] + xSpeed * t0;
                                     if (((xf > xMin) || (xf < -xMin)) && ((event.getAction() == MotionEvent.ACTION_UP) || (event.getAction() == MotionEvent.ACTION_CANCEL))) {
                                         final float nDeltaXf = deltaXf;
-                                        swipeEvent.onSwipped(swippingDiv, new Runnable() {
+                                        swipeEvent.onSwipped(swippingDiv, (deltaXf>=0), new Runnable() {
                                             @Override
                                             public void run() {
                                                 swipeEvent.onUnSwipe(swippingDiv,false);
@@ -7454,7 +7460,7 @@ public abstract class AQuery {
         swippingDiv.setLayoutParams(questionDivLP);
     }
     private static void replaceSwippingDiv(final View swippingDiv, final ViewGroup.MarginLayoutParams initialMargins, final float deltaXf, final SwipeListener callback, final boolean fromUser) {
-        callback.onUnSwipping(swippingDiv, getSwipeProgress(swippingDiv,deltaXf), fromUser); // TODO
+        callback.onUnSwipping(swippingDiv, getSwipeProgress(swippingDiv,deltaXf),(deltaXf>=0), fromUser); // TODO
         divReplacingAfterSwipe = swippingDiv;
         final int replaceID = nbReplacesAfterSwipe;
         final float nDeltaX = deltaXf - 0.08f*getSwipeWidth(swippingDiv)*Math.signum(deltaXf);
@@ -12053,7 +12059,7 @@ public abstract class AQuery {
 
     /**
      * Returns the union of 2 sets, removing duplicates.
-     * This function assumes that the first list has no duplicated
+     * This function assumes that the first list has no duplicates
      */
     public static <T> List<T> union(List<T> l1, List<T> l2) {
         List<T> res = new ArrayList<>(l1.size()+l2.size());
@@ -12066,7 +12072,7 @@ public abstract class AQuery {
     }
     /**
      * Returns the intersection of 2 sets, removing duplicates.
-     * This function assumes that the first list has no duplicated
+     * This function assumes that the first list has no duplicates
      */
     public static <T> List<T> intersection(List<T> l1, List<T> l2) {
         List<T> res = new ArrayList<>(Math.min(l1.size(),l2.size()));

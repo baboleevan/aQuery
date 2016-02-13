@@ -1179,14 +1179,14 @@ public class $Utils {
     }
     /**
      * Returns the union of 2 sets, removing duplicates.
-     * This function assumes that the first list has no duplicated
+     * This function assumes that the first list has no duplicates
      */
     public <T> List<T> union(List<T> l1, List<T> l2) {
         return AQuery.union(l1, l2);
     }
     /**
      * Returns the intersection of 2 sets, removing duplicates.
-     * This function assumes that the first list has no duplicated
+     * This function assumes that the first list has no duplicates
      */
     public <T> List<T> intersection(List<T> l1, List<T> l2) {
         return AQuery.intersection(l1, l2);
