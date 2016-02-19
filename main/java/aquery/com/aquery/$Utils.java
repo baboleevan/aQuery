@@ -49,8 +49,6 @@ public class $Utils {
      * A class to handle HTTP queries
      */
     public static class AjaxQuery {
-        private static final String USER_AGENT = "Mozilla/5.0";
-
         private Activity ctx;
 
         public AjaxQuery(Activity ctx) {
@@ -240,14 +238,12 @@ public class $Utils {
                         // optional default is GET
                         con.setRequestMethod("GET");
 
-                        //add request header
-                        con.setRequestProperty("User-Agent", USER_AGENT);
-
                         int responseCode = con.getResponseCode();
                         if (responseCode != HttpURLConnection.HTTP_OK)
                             throw new FailureResponseException(responseCode);
 
                         data = getStringFromInputStream(con.getInputStream());
+                        con.disconnect();
                     }
                     catch (Exception e) {
                         err = e;
@@ -293,7 +289,6 @@ public class $Utils {
                         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
                         con.setRequestMethod("POST");
-                        con.setRequestProperty("User-Agent", USER_AGENT);
 
                         con.setDoOutput(true);
                         DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -306,6 +301,7 @@ public class $Utils {
                             throw new FailureResponseException(responseCode);
 
                         data = getStringFromInputStream(con.getInputStream());
+                        con.disconnect();
                     }
                     catch (Exception e) {
                         err = e;
