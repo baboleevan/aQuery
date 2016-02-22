@@ -50,6 +50,7 @@ import java.io.IOException;
  * Defines common utilities for working with animations.
  *
  */
+@SuppressWarnings("unused")
 public class AnimationUtils {
     /**
      * Returns the current animation time in milliseconds. This time should be used when invoking
@@ -73,6 +74,7 @@ public class AnimationUtils {
      * @return The animation object reference by the specified id
      * @throws NotFoundException when the animation cannot be loaded
      */
+    @SuppressWarnings("TryWithIdenticalCatches")
     public static Animation loadAnimation(Context context, int id)
             throws NotFoundException {
 
@@ -101,6 +103,7 @@ public class AnimationUtils {
         return createAnimationFromXml(c, parser, null, Xml.asAttributeSet(parser));
     }
 
+    @SuppressWarnings("IfCanBeSwitch")
     private static Animation createAnimationFromXml(Context c, XmlPullParser parser,
                                                     AnimationSet parent, AttributeSet attrs) throws XmlPullParserException, IOException {
 
@@ -143,6 +146,7 @@ public class AnimationUtils {
 
     }
 
+    @SuppressWarnings("TryWithIdenticalCatches")
     public static LayoutAnimationController loadLayoutAnimation(Context context, int id)
             throws NotFoundException {
 
@@ -208,6 +212,7 @@ public class AnimationUtils {
      * @return The animation object reference by the specified id
      * @throws NotFoundException
      */
+    @SuppressWarnings("TryWithIdenticalCatches")
     public static Interpolator loadInterpolator(Context context, int id) throws NotFoundException {
         XmlResourceParser parser = null;
         try {
@@ -248,28 +253,36 @@ public class AnimationUtils {
             AttributeSet attrs = Xml.asAttributeSet(parser);
 
             String  name = parser.getName();
-
-
-            if (name.equals("linearInterpolator")) {
-                interpolator = new LinearInterpolator(c, attrs);
-            } else if (name.equals("accelerateInterpolator")) {
-                interpolator = new AccelerateInterpolator(c, attrs);
-            } else if (name.equals("decelerateInterpolator")) {
-                interpolator = new DecelerateInterpolator(c, attrs);
-            }  else if (name.equals("accelerateDecelerateInterpolator")) {
-                interpolator = new AccelerateDecelerateInterpolator(c, attrs);
-            }  else if (name.equals("cycleInterpolator")) {
-                interpolator = new CycleInterpolator(c, attrs);
-            } else if (name.equals("anticipateInterpolator")) {
-                interpolator = new AnticipateInterpolator(c, attrs);
-            } else if (name.equals("overshootInterpolator")) {
-                interpolator = new OvershootInterpolator(c, attrs);
-            } else if (name.equals("anticipateOvershootInterpolator")) {
-                interpolator = new AnticipateOvershootInterpolator(c, attrs);
-            } else if (name.equals("bounceInterpolator")) {
-                interpolator = new BounceInterpolator(c, attrs);
-            } else {
-                throw new RuntimeException("Unknown interpolator name: " + parser.getName());
+            switch (name) {
+                case "linearInterpolator":
+                    interpolator = new LinearInterpolator(c, attrs);
+                    break;
+                case "accelerateInterpolator":
+                    interpolator = new AccelerateInterpolator(c, attrs);
+                    break;
+                case "decelerateInterpolator":
+                    interpolator = new DecelerateInterpolator(c, attrs);
+                    break;
+                case "accelerateDecelerateInterpolator":
+                    interpolator = new AccelerateDecelerateInterpolator(c, attrs);
+                    break;
+                case "cycleInterpolator":
+                    interpolator = new CycleInterpolator(c, attrs);
+                    break;
+                case "anticipateInterpolator":
+                    interpolator = new AnticipateInterpolator(c, attrs);
+                    break;
+                case "overshootInterpolator":
+                    interpolator = new OvershootInterpolator(c, attrs);
+                    break;
+                case "anticipateOvershootInterpolator":
+                    interpolator = new AnticipateOvershootInterpolator(c, attrs);
+                    break;
+                case "bounceInterpolator":
+                    interpolator = new BounceInterpolator(c, attrs);
+                    break;
+                default:
+                    throw new RuntimeException("Unknown interpolator name: " + parser.getName());
             }
 
         }

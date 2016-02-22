@@ -11,6 +11,7 @@ import java.util.List;
  *
  * Inherit your activity from this one to be be able to use it
  */
+@SuppressWarnings("unused")
 public class $Activity extends Activity {
     private final $Constructors aqFactory = new $Constructors(this); // The object containing all useful methods to construct AQuery objects
 

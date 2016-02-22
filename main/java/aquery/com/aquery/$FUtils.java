@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * The $Utils function adapted to Fragments
  */
+@SuppressWarnings("unused")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class $FUtils extends $Utils {
     private Fragment fragment;
@@ -93,6 +94,6 @@ public class $FUtils extends $Utils {
      * Call this function once the activity is created
      */
     public void initActivity() {
-        ctx = fragment.getActivity();
+        setActivity(fragment.getActivity());
     }
 }

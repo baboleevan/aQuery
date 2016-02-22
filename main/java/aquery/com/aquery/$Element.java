@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * An AQuery object containing ta single element
+ * An AQuery object containing a single element
  */
 public class $Element extends AQuery {
     private View elt; // The element
@@ -88,6 +88,7 @@ public class $Element extends AQuery {
     /**
      * Checks if a given View is currently animating
      */
+    @SuppressWarnings("SimplifiableIfStatement")
     protected static boolean isAnimating(View v) {
         $Element res = animatingElements.get(v);
         if (res == null)

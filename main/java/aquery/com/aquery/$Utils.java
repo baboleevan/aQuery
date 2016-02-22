@@ -1,5 +1,6 @@
 package aquery.com.aquery;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
@@ -19,6 +21,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,11 +42,21 @@ import java.util.List;
 /**
  * A class containing all useful methods that are not related to any AQuery element
  */
+@SuppressWarnings("unused")
 public class $Utils {
     protected Activity ctx; // The activity associated
 
     public $Utils(Activity ctx) {
+        setActivity(ctx);
+    }
+
+    /**
+     * Sets the reference to the activity associated
+     */
+    protected void setActivity(Activity ctx) {
         this.ctx = ctx;
+        if ((ctx != null) && tag.equals(""))
+            tag = ctx.getClass().getSimpleName();
     }
 
     /**
@@ -100,6 +114,7 @@ public class $Utils {
                         res += URLEncoder.encode(param.value, "UTF-8");
                     }
                     catch (UnsupportedEncodingException e) {
+                        throw new IllegalArgumentException(e);
                     }
                 }
             }
@@ -124,7 +139,6 @@ public class $Utils {
 
             /**
              * Returns the error code (404, 500, etc)
-             * @return
              */
             public int getErrorCode() {
                 return code;
@@ -145,6 +159,7 @@ public class $Utils {
             /**
              * Function called when an error occured during the request
              * @param e
+             * The exception responsible for the error
              */
             void fail(Exception e);
 
@@ -167,6 +182,7 @@ public class $Utils {
             /**
              * Function called when an error occured during the request
              * @param e
+             * The exception responsible for the error
              */
             void fail(Exception e);
             /**
@@ -598,6 +614,32 @@ public class $Utils {
     public AQuery create(String name) {
         return create(ctx, name);
     }
+
+    /**
+     * Creates a View from its specified class
+     * @param viewClass
+     * The View class, for example TextView.class
+     * @return
+     * An AQuery object containing the View
+     */
+    @SuppressWarnings({"TryWithIdenticalCatches", "unchecked"})
+    public AQuery create(Class viewClass) {
+        try {
+            return new $Element(ctx, (View) viewClass.getConstructor(Context.class).newInstance(ctx));
+        }
+        catch (InvocationTargetException e) {
+            throw new IllegalArgumentException(e);
+        }
+        catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(e);
+        }
+        catch (InstantiationException e) {
+            throw new IllegalArgumentException(e);
+        }
+        catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
     /**
      * Creates a View from its specified class name
      * @param ctx
@@ -607,6 +649,7 @@ public class $Utils {
      * @return
      * An AQuery object containing the View
      */
+    @SuppressWarnings({"TryWithIdenticalCatches", "unchecked"})
     public static AQuery create(Activity ctx, String name) {
         try {
             return new $Element(ctx, (View) getViewClass(ctx,name).getConstructor(Context.class).newInstance(ctx));
@@ -927,7 +970,7 @@ public class $Utils {
      * The function to call when the user submits the dialog box
      */
     public void prompt(String title, String message, String defaut, final PromptListener callback) {
-        prompt(title,message,defaut, InputType.TYPE_CLASS_TEXT, callback);
+        prompt(title, message, defaut, InputType.TYPE_CLASS_TEXT, callback);
     }
 
     /**
@@ -944,7 +987,7 @@ public class $Utils {
      * The function to call when the user submits the dialog box
      */
     public void prompt(String title, String message, String defaut, int inputType, final PromptListener callback) {
-        final AQuery promptView = create("EditText")
+        final AQuery promptView = create(EditText.class)
                 .lp("match_parent", "wrap_content")
                 .prop("inputType", inputType)
                 .prop("singleLine", true);
@@ -1003,7 +1046,7 @@ public class $Utils {
      * The function called when the user has made his choice
      */
     public void choose(String[] choices, ChoiceListener callback) {
-        choose(null, choices,callback);
+        choose(null, choices, callback);
     }
     /**
      * Shows a dialog box to ask the user to select an item within a list of choices
@@ -1492,7 +1535,7 @@ public class $Utils {
      * Shows the keayboard if it's hidden and hides it if it's shown
      */
     public void toggleKeyboard() {
-        ((InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0,0);
+        ((InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0, 0);
     }
 
     /**
@@ -1532,6 +1575,7 @@ public class $Utils {
      * @param resourceID
      * The resource identifier
      */
+    @SuppressWarnings("deprecation")
     public Drawable drawable(int resourceID) {
         return ctx.getResources().getDrawable(resourceID);
     }
@@ -1572,6 +1616,7 @@ public class $Utils {
      * @param resourceID
      * The resource identifier
      */
+    @SuppressWarnings("deprecation")
     public int color(int resourceID) {
         return ctx.getResources().getColor(resourceID);
     }
@@ -1606,5 +1651,204 @@ public class $Utils {
      */
     public Object xml(int resourceID) {
         return ctx.getResources().getXml(resourceID);
+    }
+
+    /**
+     * Displays a Toast information message to the user
+     * @param text
+     * The text to display
+     * @return
+     * The Toast Object created
+     */
+    public Toast toast(String text) {
+        return toast(text, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a Toast information message to the user
+     * @param text
+     * The text to display
+     * @param duration
+     * The duration, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     * @return
+     * The Toast Object created
+     */
+    public Toast toast(String text, int duration) {
+        Toast res = Toast.makeText(ctx, text, duration);
+        res.show();
+        return res;
+    }
+    /**
+     * Displays a Toast information message to the user
+     * @param resource
+     * The text resource to display
+     * @return
+     * The Toast Object created
+     */
+    public Toast toast(int resource) {
+        return toast(resource, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a Toast information message to the user
+     * @param resource
+     * The text resource to display
+     * @param duration
+     * The duration, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     * @return
+     * The Toast Object created
+     */
+    public Toast toast(int resource, int duration) {
+        Toast res = Toast.makeText(ctx, resource, duration);
+        res.show();
+        return res;
+    }
+
+    private String tag = ""; // The tag used for log messages
+    /**
+     * Sets the default tag identifier used for log messages
+     */
+    public void tag(String tag) {
+        this.tag = tag;
+    }
+
+    /**
+     * Sends a verbose log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    public int verbose(Object message) {
+        return verbose(tag,message);
+    }
+
+    /**
+     * Sends a verbose log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    public int verbose(String tag, Object message) {
+        return Log.v(tag, String.valueOf(message));
+    }
+    /**
+     * Sends a debug log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    public int debug(Object message) {
+        return debug(tag,message);
+    }
+    /**
+     * Sends a debug log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    public int debug(String tag, Object message) {
+        return Log.d(tag, String.valueOf(message));
+    }
+    /**
+     * Sends an information log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    public int info(Object message) {
+        return info(tag,message);
+    }
+    /**
+     * Sends an information log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    public int info(String tag, Object message) {
+        return Log.d(tag, String.valueOf(message));
+    }
+    /**
+     * Sends a warning log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    public int warning(Object message) {
+        return warning(tag,message);
+    }
+    /**
+     * Sends a warning log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    public int warning(String tag, Object message) {
+        return Log.w(tag, String.valueOf(message));
+    }
+    /**
+     * Sends an error log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    public int error(Object message) {
+        return error(tag,message);
+    }
+    /**
+     * Sends an error log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    public int error(String tag, Object message) {
+        return Log.e(tag, String.valueOf(message));
+    }
+    /**
+     * Sends a failure log message.
+     * By default, the log tag identifier for the log is the Activity name. Call tag to change it
+     * @param message
+     * The message to log
+     * @return
+     * The number of bytes written
+     */
+    @TargetApi(Build.VERSION_CODES.FROYO)
+    public int failure(Object message) {
+        return failure(tag,message);
+    }
+    /**
+     * Sends a failure log message
+     * @param tag
+     * The tag used to identify the log message
+     * @param message
+     * The message to display
+     * @return
+     * The number of bytes written
+     */
+    @TargetApi(Build.VERSION_CODES.FROYO)
+    public int failure(String tag, Object message) {
+        return Log.wtf(tag, String.valueOf(message));
     }
 }

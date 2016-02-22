@@ -13,6 +13,7 @@ import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -79,6 +80,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextClock;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.widget.ViewAnimator;
 
@@ -101,6 +103,7 @@ import java.util.regex.Pattern;
  * The main class of the AQuery Framework
  * Contains a set of elements (Views), and provide many methods to access and edit the properties of these elements
  */
+@SuppressWarnings("unused")
 public abstract class AQuery {
     protected Activity ctx; // A reference to the activity where the views are located
 
@@ -299,7 +302,7 @@ public abstract class AQuery {
 
         @Override
         Transition getTransition($Element q, Object begin, Object end) {
-            return new NoTransition(end); // No perticular transition in the general case
+            return new NoTransition(end); // No particular transition in the general case
         }
 
         @Override
@@ -2471,8 +2474,8 @@ public abstract class AQuery {
                 ((TextView) v).setFilters((boolean) value ? new InputFilter[]{
                         new InputFilter() {
                             public CharSequence filter(CharSequence src, int start,
-                                                       int end, Spanned dst, int dstart, int dend) {
-                                return src.length() < 1 ? dst.subSequence(dstart, dend) : "";
+                                                       int end, Spanned dst, int dStart, int dEnd) {
+                                return src.length() < 1 ? dst.subSequence(dStart, dEnd) : "";
                             }
                         }
                 } : null);
@@ -2484,6 +2487,7 @@ public abstract class AQuery {
                 return ((TextView) v).getInputExtras(false);
             }
 
+            @SuppressWarnings("TryWithIdenticalCatches")
             @Override
             public void prop(AQuery q, View v, Object value) {
                 try {
@@ -5341,11 +5345,11 @@ public abstract class AQuery {
             public void prop(AQuery q, View v, Object value) {
                 int[] iValue = (int[]) value;
                 TableLayout tl = (TableLayout) v;
-                boolean[] columsCollapsed = new boolean[tl.getChildCount()];
+                boolean[] columnsCollapsed = new boolean[tl.getChildCount()];
                 for (int col : iValue)
-                    columsCollapsed[col] = true;
+                    columnsCollapsed[col] = true;
                 for (int i=0;i<tl.getChildCount();i++)
-                    tl.setColumnCollapsed(i, columsCollapsed[i]);
+                    tl.setColumnCollapsed(i, columnsCollapsed[i]);
             }
 
             @Override
@@ -5434,7 +5438,6 @@ public abstract class AQuery {
      *
      * @param key
      * The attribute name
-     * @return
      */
     public Object prop(String key) {
         try {
@@ -5454,6 +5457,7 @@ public abstract class AQuery {
      * @param key
      * The attribute name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public boolean propb(String key) {
         try {
             return (boolean) propIfMethod(key);
@@ -5467,6 +5471,7 @@ public abstract class AQuery {
      * @param key
      * The attribute name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int propi(String key) {
         try {
             return intCast(propIfMethod(key));
@@ -5480,6 +5485,7 @@ public abstract class AQuery {
      * @param key
      * The attribute name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public float propf(String key) {
         try {
             return floatCast(propIfMethod(key));
@@ -5493,6 +5499,7 @@ public abstract class AQuery {
      * @param key
      * The attribute name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public double propd(String key) {
         try {
             return doubleCast(propIfMethod(key));
@@ -5514,6 +5521,7 @@ public abstract class AQuery {
      * @param key
      * The attribute name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public String[] propsa(String key) {
         return (String[]) prop(key);
     }
@@ -5533,18 +5541,19 @@ public abstract class AQuery {
     /**
      * Throws an exception indicating that the property does not exist
      */
-    private static void unkownProp(String key) {
+    private static void unknownProp(String key) {
         throw new IllegalArgumentException("Property \""+ key +"\" does not exist");
     }
     /**
      * Sets an attribute for every elements
-     * For example, elt.prop("id", R.id.myid) gives the id R.id.myid to every elements
+     * For example, elt.prop("id", R.id.my_id) gives the id R.id.my_id to every elements
      *
      * @param key
      * The attribute name
      * @param value
      * The new value of the attribute
      */
+    @SuppressWarnings("EmptyCatchBlock")
     public AQuery prop(String key, Object value) {
         AttrSetter callback = getPropIfExists(key);
         for (View v : list()) {
@@ -5561,13 +5570,14 @@ public abstract class AQuery {
      * Sets an attribute for every elements, by taking a String into argument
      * The interest of this method is that it can handle all the formats that Android XML handles
      *
-     * For example, elt.prop("id", "@id/myid") gives the id R.id.myid to every elements
+     * For example, elt.prop("id", "@id/my_id") gives the id R.id.my_id to every elements
      *
      * @param key
      * The attribute name
      * @param value
      * An XML-like String containing the new value of the attribute
      */
+    @SuppressWarnings("EmptyCatchBlock")
     public AQuery attr(String key, String value) {
         AttrSetter callback = getAttrIfExists(key);
         for (View v : list()) {
@@ -5583,7 +5593,7 @@ public abstract class AQuery {
     /**
      * Throws an exception indicating that the attribute does not exist
      */
-    private static void unkownAttr(String key) {
+    private static void unknownAttr(String key) {
         throw new IllegalArgumentException("Attribute \""+ key +"\" does not exist");
     }
 
@@ -5601,7 +5611,7 @@ public abstract class AQuery {
     protected static AttrSetter getAttrIfExists(String attribute) {
         AttrSetter res = getAttr(attribute);
         if (res == null)
-            unkownAttr(attribute);
+            unknownAttr(attribute);
         return res;
     }
 
@@ -5612,7 +5622,7 @@ public abstract class AQuery {
     protected static AttrSetter getPropIfExists(String key) {
         AttrSetter res = getAttr(key);
         if (res == null)
-            unkownProp(key);
+            unknownProp(key);
         return res;
     }
 
@@ -5673,7 +5683,7 @@ public abstract class AQuery {
     }
 
     /**
-     * Returns the BoolAttr that checks if a TextView inputtype has the specified flag
+     * Returns the BoolAttr that checks if a TextView inputType has the specified flag
      */
     private static BoolAttr inputTypeAttr(final int flag) {
         return new BoolAttr(new PropListener() {
@@ -5867,12 +5877,14 @@ public abstract class AQuery {
      * Returns an int[] containing all the paddings of the first element in the set of elements
      * The paddings are given in the CSS-based-convention order : top,right,bottom,left
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int[] paddings() {
         return new int[]{paddingTop(),paddingRight(),paddingBottom(),paddingLeft()};
     }
     /**
      * Sets all the paddings of the elements, in px
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery paddings(int padding) {
         paddings(padding, padding, padding, padding);
         return this;
@@ -5885,6 +5897,7 @@ public abstract class AQuery {
      * @param horizontalPaddings
      * The left and right paddings
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery paddings(int verticalPaddings, int horizontalPaddings) {
         paddings(verticalPaddings, horizontalPaddings, verticalPaddings, horizontalPaddings);
         return this;
@@ -5892,6 +5905,7 @@ public abstract class AQuery {
     /**
      * Sets all the paddings of the elements, in px
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery paddings(int top, int right, int bottom, int left) {
         for (View v : list())
             v.setPadding(left, top, right, bottom);
@@ -6066,7 +6080,7 @@ public abstract class AQuery {
     }
     /**
      * Returns an int[] containing all the margins of the first element in the set of elements
-     * The paddings are given in the CSS-based-convention order : top,right,bottom,left
+     * The margins are given in the CSS-based-convention order : top,right,bottom,left
      */
     public int[] margins() {
         return new int[]{marginTop(),marginRight(),marginBottom(),marginLeft()};
@@ -6085,7 +6099,6 @@ public abstract class AQuery {
      * The top and bottom margins
      * @param horizontalMargins
      * The left and right margins
-     * @return
      */
     public AQuery margins(int verticalMargins, int horizontalMargins) {
         margins(verticalMargins, horizontalMargins, verticalMargins, horizontalMargins);
@@ -6189,6 +6202,7 @@ public abstract class AQuery {
     /**
      * Get the current computed width for the first element in the set of matched elements, including paddings
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int outerWidth() {
         return width()+paddingLeft()+paddingRight();
     }
@@ -6197,6 +6211,7 @@ public abstract class AQuery {
      * @param includeMargins
      * true to include also margins
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int outerWidth(boolean includeMargins) {
         if (includeMargins)
             return outerWidth() + marginLeft()+marginRight();
@@ -6205,6 +6220,7 @@ public abstract class AQuery {
     /**
      * Get the current computed height for the first element in the set of matched elements, including paddings
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int outerHeight() {
         return height()+paddingTop()+paddingBottom();
     }
@@ -6214,6 +6230,7 @@ public abstract class AQuery {
      * @param includeMargins
      * true to include also margins
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int outerHeight(boolean includeMargins) {
         if (includeMargins)
             return outerHeight() + marginTop()+marginBottom();
@@ -6223,6 +6240,7 @@ public abstract class AQuery {
      * Get the current computed width for the first element in the set of matched elements, including paddings
      * Does exactly the same thing as outerWidth() method
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int innerWidth() {
         return outerWidth();
     }
@@ -6237,6 +6255,7 @@ public abstract class AQuery {
      * Get the current computed width for the first element in the set of matched elements, including paddings
      * Does exactly the same thing as outerHeight() method
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public int innerHeight() {
         return outerHeight();
     }
@@ -6438,7 +6457,6 @@ public abstract class AQuery {
      * The duration of the animation, in ms
      * @param complete
      * The function to call when the animation is complete
-     * @return
      */
     public AQuery fadeOut(int duration, final CompleteListener complete) {
         return animate(Transition.prop("alpha", 0), duration, new CompleteListener() {
@@ -6726,7 +6744,7 @@ public abstract class AQuery {
      * The easing function
      */
     public AQuery hover(PropertyTransition[] attrs, int timeMS, String easing) {
-        return hover(attrs,timeMS,easing,(AnimationListener)null,(AnimationListener)null);
+        return hover(attrs,timeMS,easing, null, null);
     }
     /**
      * Changes a property of the elements when the user touches it
@@ -7010,6 +7028,7 @@ public abstract class AQuery {
      * @param l
      * The function to call on check change
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery check(CompoundButton.OnCheckedChangeListener l) {
         for (View v : list())
             ((CompoundButton) v).setOnCheckedChangeListener(l);
@@ -7021,6 +7040,7 @@ public abstract class AQuery {
      * @param l
      * The function to call on check change
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery check(RadioGroup.OnCheckedChangeListener l) {
         for (View v : list())
             ((RadioGroup) v).setOnCheckedChangeListener(l);
@@ -7050,6 +7070,7 @@ public abstract class AQuery {
         return this;
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public interface SwippedListener {
         /**
          * The function called when the user swipped the View completely
@@ -7064,12 +7085,14 @@ public abstract class AQuery {
          */
         void onSwipped(View v, boolean right, Runnable unSwipe);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     public interface StartStopSwipeListener extends SwippedListener {
         /**
          * The function called when the user starts swipping
          */
         void onStartSwipping(View v);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     public interface SwippingListener extends StartStopSwipeListener {
         /**
          * The function called when the user is swipping
@@ -7115,6 +7138,7 @@ public abstract class AQuery {
          */
         void onUnSwipped(View v, boolean fromUser);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     public interface TouchSwipeListener extends SwippedListener {
         /**
          * The function called when the user starts touching the view
@@ -7137,6 +7161,7 @@ public abstract class AQuery {
          */
         void onTouchUp(View v, MotionEvent event, boolean swipped);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     public interface TouchedSwipeListener extends TouchSwipeListener,StartStopSwipeListener {
     }
     /**
@@ -7144,6 +7169,7 @@ public abstract class AQuery {
      */
     public interface SwipeListener extends SwippingListener,TouchSwipeListener {
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private SwipeListener toSwipeListener(final SwippedListener l) {
         return new SwipeListener() {
             @Override
@@ -7173,6 +7199,7 @@ public abstract class AQuery {
             }
         };
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private SwipeListener toSwipeListener(final StartStopSwipeListener l) {
         return new SwipeListener() {
             @Override
@@ -7203,6 +7230,7 @@ public abstract class AQuery {
             }
         };
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private SwipeListener toSwipeListener(final SwippingListener l) {
         return new SwipeListener() {
             @Override
@@ -7237,6 +7265,7 @@ public abstract class AQuery {
             }
         };
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private SwipeListener toSwipeListener(final TouchSwipeListener l) {
         return new SwipeListener() {
             @Override
@@ -7268,6 +7297,7 @@ public abstract class AQuery {
             }
         };
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private SwipeListener toSwipeListener(final TouchedSwipeListener l) {
         return new SwipeListener() {
             @Override
@@ -7306,6 +7336,7 @@ public abstract class AQuery {
      * @param swippedEvent
      * The event called when the user has finished swiped one of the element
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final SwippedListener swippedEvent) {
         return swipe(toSwipeListener(swippedEvent));
     }
@@ -7315,6 +7346,7 @@ public abstract class AQuery {
      * @param swipeEvent
      * The event called when the user starts or finished swipping
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final StartStopSwipeListener swipeEvent) {
         return swipe(toSwipeListener(swipeEvent));
     }
@@ -7324,6 +7356,7 @@ public abstract class AQuery {
      * @param swipeEvent
      * The event called when the user is swipping
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final SwippingListener swipeEvent) {
         return swipe(toSwipeListener(swipeEvent));
     }
@@ -7333,6 +7366,7 @@ public abstract class AQuery {
      * @param swipeEvent
      * The event called when the user swiped or touches thi view
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final TouchSwipeListener swipeEvent) {
         return swipe(toSwipeListener(swipeEvent));
     }
@@ -7342,6 +7376,7 @@ public abstract class AQuery {
      * @param swipeEvent
      * The event called when the user starts/stops swipping or touches thi view
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final TouchedSwipeListener swipeEvent) {
         return swipe(toSwipeListener(swipeEvent));
     }
@@ -7351,6 +7386,7 @@ public abstract class AQuery {
      * @param swipeEvent
      * The event called when the an event related to swipe happens
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery swipe(final SwipeListener swipeEvent) {
         for (View v : list()) {
             // This code comes from another project. It works, sorry for the absence of comments
@@ -7440,6 +7476,7 @@ public abstract class AQuery {
     }
     private static int nbReplacesAfterSwipe = 0;
     private static View divReplacingAfterSwipe;
+    @SuppressWarnings("SpellCheckingInspection")
     private static void stopReplacingAfterSwipe(View swippingDiv, ViewGroup.MarginLayoutParams initialMargins) {
         if (divReplacingAfterSwipe != null) {
             nbReplacesAfterSwipe++;
@@ -7447,6 +7484,7 @@ public abstract class AQuery {
                 placeSwippingDiv(divReplacingAfterSwipe, initialMargins, 0);
         }
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private static void placeSwippingDiv(View swippingDiv, ViewGroup.MarginLayoutParams initialMargins, float deltaXf) {
         ViewGroup.MarginLayoutParams questionDivLP = (ViewGroup.MarginLayoutParams) swippingDiv.getLayoutParams();
         int deltaXInt = Math.round(deltaXf);
@@ -7459,8 +7497,9 @@ public abstract class AQuery {
         }
         swippingDiv.setLayoutParams(questionDivLP);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private static void replaceSwippingDiv(final View swippingDiv, final ViewGroup.MarginLayoutParams initialMargins, final float deltaXf, final SwipeListener callback, final boolean fromUser) {
-        callback.onUnSwipping(swippingDiv, getSwipeProgress(swippingDiv,deltaXf),(deltaXf>=0), fromUser); // TODO
+        callback.onUnSwipping(swippingDiv, getSwipeProgress(swippingDiv,deltaXf),(deltaXf>=0), fromUser);
         divReplacingAfterSwipe = swippingDiv;
         final int replaceID = nbReplacesAfterSwipe;
         final float nDeltaX = deltaXf - 0.08f*getSwipeWidth(swippingDiv)*Math.signum(deltaXf);
@@ -7480,9 +7519,11 @@ public abstract class AQuery {
             callback.onUnSwipped(swippingDiv, fromUser);
         }
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private static float getSwipeProgress(View swippingDiv, float deltaXf) {
         return Math.min(Math.max(Math.abs(deltaXf)/getSwipeWidth(swippingDiv), 0f), 1f);
     }
+    @SuppressWarnings("SpellCheckingInspection")
     private static int getSwipeWidth(View swippingDiv) {
         return swippingDiv.getWidth();
     }
@@ -7582,7 +7623,7 @@ public abstract class AQuery {
     /**
      * Parses the XML layout and appends the result to each elements
      * @param layout
-     * The ressoure id of the layout
+     * The resource id of the layout
      */
     public AQuery append(int layout) {
         for (View parent : list())
@@ -7625,7 +7666,7 @@ public abstract class AQuery {
     /**
      * Parses the XML layout and prepends the result to each elements
      * @param layout
-     * The ressoure id of the layout
+     * The resource id of the layout
      */
     public AQuery prepend(int layout) {
         for (View parent : list())
@@ -7665,6 +7706,7 @@ public abstract class AQuery {
      * @param parent
      * The parent
      */
+    @SuppressWarnings("StatementWithEmptyBody")
     private static int findPosition(ViewGroup parent, View child) {
         int res;
         for (res=0;parent.getChildAt(res)!=child;res++);
@@ -7709,7 +7751,7 @@ public abstract class AQuery {
     /**
      * Parses the XML layout and insert the result after each element
      * @param layout
-     * The ressoure id of the layout
+     * The resource id of the layout
      */
     public AQuery after(int layout) {
         for (View elt : list())
@@ -7721,7 +7763,6 @@ public abstract class AQuery {
      * Insert the first element in the set of elements after the target
      * @param q
      * The target elements
-     * @return
      */
     public AQuery insertAfter(AQuery q) {
         q.after(this);
@@ -7755,7 +7796,7 @@ public abstract class AQuery {
     /**
      * Parses the XML layout and insert the result before each element
      * @param layout
-     * The ressoure id of the layout
+     * The resource id of the layout
      */
     public AQuery before(int layout) {
         for (View elt : list())
@@ -7766,7 +7807,6 @@ public abstract class AQuery {
      * Insert the first element in the set of elements before the target
      * @param q
      * The target elements
-     * @return
      */
     public AQuery insertBefore(AQuery q) {
         q.before(this);
@@ -7776,6 +7816,7 @@ public abstract class AQuery {
     /**
      * Returns the element directly before each element in the set of elements
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery prev() {
         List<View> elts = list();
         ArrayList<View> res = new ArrayList<>(elts.size());
@@ -7796,6 +7837,7 @@ public abstract class AQuery {
     /**
      * Returns the element before each element in the set of elements
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery prevAll() {
         List<View> elts = list();
         ArrayList<View> res = new ArrayList<>();
@@ -7816,6 +7858,7 @@ public abstract class AQuery {
     /**
      * Returns the element directly after each element in the set of elements
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery next() {
         List<View> elts = list();
         ArrayList<View> res = new ArrayList<>(elts.size());
@@ -7836,6 +7879,7 @@ public abstract class AQuery {
     /**
      * Returns the element after each element in the set of elements
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public AQuery nextAll() {
         List<View> elts = list();
         ArrayList<View> res = new ArrayList<>();
@@ -7886,13 +7930,93 @@ public abstract class AQuery {
     /**
      * Sets the inner XML of the View from a layout resource
      * @param layout
-     * The ressoure id of the layout
+     * The resource id of the layout
      */
     public AQuery xml(int layout) {
         empty();
         for (View v : list())
             LayoutInflater.from(ctx).inflate(layout, (ViewGroup) v);
         return this;
+    }
+
+    /**
+     * Displays a toast message above the element when to the user long-presses on one of the elements
+     * @param text
+     * The text to show on long click
+     */
+    public AQuery title(String text) {
+        return title(text, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a toast message above the element when to the user long-presses on one of the elements
+     * @param text
+     * The text to show on long click
+     * @param duration
+     * The duration of the message, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     */
+    public AQuery title(final String text, final int duration) {
+        return longClick(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                displayToastAboveView(ctx, v, text, duration);
+                return true;
+            }
+        });
+    }
+    /**
+     * Displays a toast message above the element when to the user long-presses on one of the elements
+     * @param resource
+     * The text resource to show on long click
+     */
+    public AQuery title(int resource) {
+        return title(resource, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a toast message above the element when to the user long-presses on one of the elements
+     * @param resource
+     * The text resource to show on long click
+     * @param duration
+     * The duration of the message, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     */
+    public AQuery title(int resource, int duration) {
+        return title(ctx.getResources().getString(resource), duration);
+    }
+    /**
+     * Displays a toast message above the first element in the set of elements
+     * @param message
+     * The text to show
+     */
+    public AQuery toast(String message) {
+        return toast(message, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a toast message above the first element in the set of elements
+     * @param message
+     * The text to show
+     * @param duration
+     * The duration of the message, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     */
+    public AQuery toast(String message, int duration) {
+        displayToastAboveView(ctx,head(),message,duration);
+        return this;
+    }
+    /**
+     * Displays a message above the first element in the set of elements
+     * @param resource
+     * The text resource to show
+     */
+    public AQuery toast(int resource) {
+        return toast(resource, Toast.LENGTH_SHORT);
+    }
+    /**
+     * Displays a message above the first element in the set of elements
+     * @param resource
+     * The text resource to show
+     * @param duration
+     * The duration of the message, LENGTH_SHORT or LENGTH_LONG. Default is LENGTH_SHORT
+     */
+    public AQuery toast(int resource, int duration) {
+        return toast(ctx.getResources().getString(resource),duration);
     }
 
     /**
@@ -8128,6 +8252,7 @@ public abstract class AQuery {
      * Returns the background color of the first element in the set of elements
      * If the element has no background color, returns Color.TRANSPARENT
      */
+    @SuppressWarnings({"EmptyCatchBlock", "TryWithIdenticalCatches"})
     public int backgroundColor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             try {
@@ -8219,24 +8344,27 @@ public abstract class AQuery {
         /**
          * Returns a linear interpolation of 2 longs.
          */
+        @SuppressWarnings("SpellCheckingInspection")
         protected long lprogress(long a, long b, float t) {
             return Math.round(dprogress(a, b, t));
         }
         /**
          * Returns a linear interpolation of 2 floats.
          */
+        @SuppressWarnings("SpellCheckingInspection")
         protected float fprogress(float a, float b, float t) {
             return a+t*(b-a);
         }
         /**
          * Returns a linear interpolation of 2 doubles.
          */
+        @SuppressWarnings("SpellCheckingInspection")
         protected double dprogress(double a, double b, float t) {
             return a+t*(b-a);
         }
 
         /**
-         * Returns the adapted transition for a perticullar property
+         * Returns the adapted transition for a particular property
          * @param key
          * The XML attribute
          * @param val
@@ -8246,7 +8374,7 @@ public abstract class AQuery {
             return new PropertyTransition(key, val);
         }
         /**
-         * Returns the adapted transition for a perticullar property
+         * Returns the adapted transition for a particular property
          * @param key
          * The XML attribute
          * @param val
@@ -8426,7 +8554,7 @@ public abstract class AQuery {
     /**
      * A transition that does nothing
      * Use this class for properties where it's meaningless to do a transition
-     * For example, a transition for "gravity" attribute would not mean anythin
+     * For example, a transition for "gravity" attribute would not mean anything
      */
     private static class NoTransition extends Transition {
         private Object v;
@@ -8462,7 +8590,7 @@ public abstract class AQuery {
         private boolean isFunc = false, isProp = false, isAttr = false;
 
         /**
-         * Constrctuor of PropertyTransition
+         * Constructor of PropertyTransition
          * @param key
          * The attribute
          * @param function
@@ -8474,7 +8602,7 @@ public abstract class AQuery {
             isFunc = true;
         }
         /**
-         * Constrctuor of PropertyTransition
+         * Constructor of PropertyTransition
          * @param key
          * The attribute
          * @param val
@@ -8486,7 +8614,7 @@ public abstract class AQuery {
             isAttr = true;
         }
         /**
-         * Constrctuor of PropertyTransition
+         * Constructor of PropertyTransition
          * @param key
          * The attribute
          * @param val
@@ -8570,8 +8698,9 @@ public abstract class AQuery {
      * An interface to handle the easing function, that is, the speed of the animation
      * See http://easings.net/ for more details
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public interface EaseListener {
-        public static final String SWING = "swing", LINEAR = "linear",
+        String SWING = "swing", LINEAR = "linear",
                 EASE_IN_QUAD = "easeInQuad", EASE_OUT_QUAD = "easeOutQuad", EASE_IN_OUT_QUAD = "easeInOutQuad",
                 EASE_IN_CUBIC = "easeInCubic", EASE_OUT_CUBIC = "easeOutCubic", EASE_IN_OUT_CUBIC = "easeInOutCubic",
                 EASE_IN_QUART = "easeInQuart", EASE_OUT_QUART = "easeOutQuart", EASE_IN_OUT_QUART = "easeInOutQuart",
@@ -8629,7 +8758,7 @@ public abstract class AQuery {
          * @param l
          * The functions to call at each step of the animation
          * @param queue
-         * false to run the animation immediatly, true to wait until all running animations are complete.
+         * false to run the animation immediately, true to wait until all running animations are complete.
          * Default is true
          */
         public AnimationParams(PropertyTransition[] attrs, int timeMS, EaseListener easing, AnimationListener l, boolean queue) {
@@ -8690,7 +8819,7 @@ public abstract class AQuery {
             return easing;
         }
         /**
-         * Returns false if the animation runned immediatly, true if it waited until all running animations are complete.
+         * Returns false if the animation ran immediately, true if it waited until all running animations are complete.
          */
         public boolean isQueue() {
             return queue;
@@ -8751,8 +8880,9 @@ public abstract class AQuery {
     /**
      * Initialises all the predefined easing functions
      *
-     * Thoses functions were retrieved from http://stackoverflow.com/questions/5207301/jquery-easing-functions-without-using-a-plugin
+     * Those functions were retrieved from http://stackoverflow.com/questions/5207301/jquery-easing-functions-without-using-a-plugin
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static HashMap<String,EaseListener> initEasings() {
         HashMap<String,EaseListener> res = new HashMap<>();
         res.put(EaseListener.LINEAR, new EaseListener() {
@@ -9037,7 +9167,7 @@ public abstract class AQuery {
     }
 
     /**
-     * Returns the easing function that has the perticullar name
+     * Returns the easing function that has the particular name
      * Throws an exception if the function doesn't exist
      */
     private EaseListener toEasing(String name) {
@@ -9194,7 +9324,7 @@ public abstract class AQuery {
      * @param start
      * The function to call when the animation starts
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition attr, int timeMS, StartListener start, boolean queue) {
@@ -9209,7 +9339,7 @@ public abstract class AQuery {
      * @param complete
      * The function to call when the animation is complete
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition attr, int timeMS, CompleteListener complete, boolean queue) {
@@ -9224,7 +9354,7 @@ public abstract class AQuery {
      * @param start
      * The function to call when the animation starts
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition[] attrs, int timeMS, StartListener start, boolean queue) {
@@ -9239,7 +9369,7 @@ public abstract class AQuery {
      * @param complete
      * The function to call when the animation is complete
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition[] attrs, int timeMS, CompleteListener complete, boolean queue) {
@@ -9278,7 +9408,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition attr, int timeMS, AnimationListener callback, boolean queue) {
@@ -9293,7 +9423,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition[] attrs, int timeMS, AnimationListener callback, boolean queue) {
@@ -9338,7 +9468,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition attr, int timeMS, String easing, AnimationListener callback, boolean queue) {
@@ -9355,7 +9485,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition[] attrs, int timeMS, String easing, AnimationListener callback, boolean queue) {
@@ -9400,7 +9530,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition attr, int timeMS, EaseListener easing, AnimationListener callback, boolean queue) {
@@ -9418,7 +9548,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery animate(PropertyTransition[] attrs, int timeMS, EaseListener easing, AnimationListener callback, boolean queue) {
@@ -9457,7 +9587,7 @@ public abstract class AQuery {
     /**
      * Shows the elements progressively
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(boolean queue) {
@@ -9476,7 +9606,7 @@ public abstract class AQuery {
      * @param timeMS
      * The animation duration, in MS
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(int timeMS, boolean queue) {
@@ -9499,7 +9629,7 @@ public abstract class AQuery {
      * @param easing
      * The easing function
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(int timeMS, String easing, boolean queue) {
@@ -9532,7 +9662,7 @@ public abstract class AQuery {
      * @param start
      * The function to call when the animation starts
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(int timeMS, StartListener start, boolean queue) {
@@ -9545,7 +9675,7 @@ public abstract class AQuery {
      * @param complete
      * The function to call when the animation is complete
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(int timeMS, CompleteListener complete, boolean queue) {
@@ -9568,7 +9698,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(int timeMS, AnimationListener callback, boolean queue) {
@@ -9610,7 +9740,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery show(final int timeMS, final EaseListener easing, final AnimationListener callback, boolean queue) {
@@ -9650,7 +9780,7 @@ public abstract class AQuery {
     /**
      * Hides the elements progressively
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(boolean queue) {
@@ -9669,7 +9799,7 @@ public abstract class AQuery {
      * @param timeMS
      * The animation duration, in MS
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, boolean queue) {
@@ -9692,7 +9822,7 @@ public abstract class AQuery {
      * @param easing
      * The easing function
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, String easing, boolean queue) {
@@ -9725,7 +9855,7 @@ public abstract class AQuery {
      * @param start
      * The function to call when the animation starts
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, StartListener start, boolean queue) {
@@ -9738,7 +9868,7 @@ public abstract class AQuery {
      * @param complete
      * The function to call when the animation is complete
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, CompleteListener complete, boolean queue) {
@@ -9761,7 +9891,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, AnimationListener callback, boolean queue) {
@@ -9788,7 +9918,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(int timeMS, String easing, AnimationListener callback, boolean queue) {
@@ -9815,7 +9945,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery hide(final int timeMS, final EaseListener easing, final AnimationListener callback, boolean queue) {
@@ -9880,7 +10010,7 @@ public abstract class AQuery {
     /**
      * Hides progressively the visible elements, and shows progressively the others
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(boolean queue) {
@@ -9899,7 +10029,7 @@ public abstract class AQuery {
      * @param timeMS
      * The animation duration, in MS
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(int timeMS, boolean queue) {
@@ -9922,7 +10052,7 @@ public abstract class AQuery {
      * @param easing
      * The easing function
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(int timeMS, String easing, boolean queue) {
@@ -9945,7 +10075,7 @@ public abstract class AQuery {
      * @param complete
      * The function to call when the animation is complete
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(int timeMS, CompleteListener complete, boolean queue) {
@@ -9968,7 +10098,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(int timeMS, AnimationListener callback, boolean queue) {
@@ -9989,7 +10119,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(int timeMS, String easing, AnimationListener callback, boolean queue) {
@@ -10016,7 +10146,7 @@ public abstract class AQuery {
      * @param callback
      * The functions to call at each step of the animation
      * @param queue
-     * false to run the animation immediatly, true to wait until all running animations are complete.
+     * false to run the animation immediately, true to wait until all running animations are complete.
      * Default is true
      */
     public AQuery toggle(final int timeMS, final EaseListener easing, final AnimationListener callback, boolean queue) {
@@ -10046,7 +10176,7 @@ public abstract class AQuery {
 
     /*
      * All the format functions
-     * Thos functions make the link between an XML value and their corresponding attribute
+     * Those functions make the link between an XML value and their corresponding attribute
      * For example, the function formatString can convert "@string/my_resource_string" to its corresponding value
      */
 
@@ -10072,12 +10202,7 @@ public abstract class AQuery {
         }
     }
     private String[] formatStringArray(String text) {
-        try {
-            return ctx.getResources().getStringArray(getIdentifier("array", text));
-        }
-        catch (Resources.NotFoundException e) {
-            throw e;
-        }
+        return ctx.getResources().getStringArray(getIdentifier("array", text));
     }
     private int[] formatIntArray(String text) {
         String[] sNumbers = formatString(text).split(" *, *");
@@ -10086,6 +10211,7 @@ public abstract class AQuery {
             res[i] = Integer.valueOf(sNumbers[i]);
         return res;
     }
+    @SuppressWarnings("SimplifiableIfStatement")
     private boolean formatBool(String text) {
         if ("true".equals(text))
             return true;
@@ -10136,6 +10262,7 @@ public abstract class AQuery {
             throw new IllegalArgumentException(e);
         }
     }
+    @SuppressLint("RtlHardcoded")
     private static int formatGravity(String text) {
         String[] args = text.split("\\|");
         int res = 0;
@@ -10306,6 +10433,7 @@ public abstract class AQuery {
             return View.OVER_SCROLL_NEVER;
         throw new IllegalArgumentException("Unknown overScroll mode \""+ text +"\"");
     }
+    @TargetApi(Build.VERSION_CODES.M)
     private static int formatIndicator(String text) {
         String[] args = text.split("\\|");
         int res = 0;
@@ -10336,8 +10464,10 @@ public abstract class AQuery {
             return AbsListView.CHOICE_MODE_SINGLE;
         if ("multipleChoice".equals(text))
             return AbsListView.CHOICE_MODE_MULTIPLE;
-        if ("multipleChoiceModal".equals(text))
-            return AbsListView.CHOICE_MODE_MULTIPLE_MODAL;
+        if ("multipleChoiceModal".equals(text)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                return AbsListView.CHOICE_MODE_MULTIPLE_MODAL;
+        }
         throw new IllegalArgumentException("Unknown choice mode \""+ text +"\"");
     }
     private static int formatTranscript(String text) {
@@ -10386,6 +10516,7 @@ public abstract class AQuery {
         }
         return res;
     }
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private static int formatAlignment(String text) {
         if ("alignBounds".equals(text))
             return GridLayout.ALIGN_BOUNDS;
@@ -10524,7 +10655,7 @@ public abstract class AQuery {
                 else if ("all".equals(arg))
                     res |= Linkify.ALL;
                 else
-                    throw new IllegalArgumentException("Unknown autolink \"" + arg + "\"");
+                    throw new IllegalArgumentException("Unknown autoLink \"" + arg + "\"");
             }
         }
         return res;
@@ -10538,7 +10669,7 @@ public abstract class AQuery {
             return InputType.TYPE_TEXT_FLAG_CAP_WORDS;
         else if ("none".equals(text))
             return 0;
-        throw new IllegalArgumentException("Unknows caps type \""+ text +"\"");
+        throw new IllegalArgumentException("Unknown caps type \""+ text +"\"");
     }
     private static int formatInputType(String text) {
         if ("none".equals(text))
@@ -10551,8 +10682,10 @@ public abstract class AQuery {
             return InputType.TYPE_CLASS_NUMBER;
         if ("numberDecimal".equals(text))
             return InputType.TYPE_NUMBER_FLAG_DECIMAL;
-        if ("numberPassword".equals(text))
-            return InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+        if ("numberPassword".equals(text)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                return InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+        }
         if ("numberSigned".equals(text))
             return InputType.TYPE_NUMBER_FLAG_SIGNED;
         if ("phone".equals(text))
@@ -10629,6 +10762,7 @@ public abstract class AQuery {
         try {
             final Method callback = ctx.getClass().getMethod(text, View.class);
             return new View.OnClickListener() {
+                @SuppressWarnings({"TryWithIdenticalCatches", "EmptyCatchBlock"})
                 @Override
                 public void onClick(View v) {
                     try {
@@ -10697,6 +10831,7 @@ public abstract class AQuery {
         }
     }
     private static final Pattern DIMEN_MATCHER = Pattern.compile("^(\\d*(?:\\.\\d*)?)([a-z]*)$");
+    @SuppressWarnings("EmptyCatchBlock")
     private float formatDimen(String text) {
         Matcher m = DIMEN_MATCHER.matcher(text);
         if (m.find())
@@ -10945,7 +11080,7 @@ public abstract class AQuery {
         }
 
         public boolean add(E object) {
-            tail = new $List<E>(head,tail);
+            tail = new $List<>(head,tail);
             head = object;
             return true;
         }
@@ -10955,6 +11090,7 @@ public abstract class AQuery {
             tail = null;
         }
 
+        @SuppressWarnings("SimplifiableIfStatement")
         public boolean contains(Object object) {
             if (object == head)
                 return true;
@@ -10992,6 +11128,7 @@ public abstract class AQuery {
         private char flag;
         private char shutoff;
 
+        @SuppressWarnings("StatementWithEmptyBody")
         private BracketAnalyser(String selector, int bracketID) {
             bracketStartID = bracketID;
             completeString = selector;
@@ -11022,18 +11159,18 @@ public abstract class AQuery {
                 i++;
             else
                 shutoff = ']';
-            boolean antislach = false;
+            boolean antiSlash = false;
             valStartID = i;
             for (;i<completeString.length();i++) {
-                if (antislach) {
-                    antislach = false;
+                if (antiSlash) {
+                    antiSlash = false;
                     continue;
                 }
                 char iChar = completeString.charAt(i);
                 if (iChar == shutoff)
                     break;
                 if (completeString.charAt(i) == '\\')
-                    antislach = true;
+                    antiSlash = true;
             }
             valEndID = i;
             if (escaped) {
@@ -11095,7 +11232,7 @@ public abstract class AQuery {
     }
 
     /**
-     * A class to analyse selectos
+     * A class to analyse selectors
      * This class is basically an array of filters, like ["#my_id", "TextView"],
      * and a list of functions to treat brackets filters
      */
@@ -11194,7 +11331,7 @@ public abstract class AQuery {
         return new $Array(ctx,res);
     }
     /**
-     * Returns all children and subchildren of the elements
+     * Returns all children and sub-children of the elements
      */
     private AQuery getAllChildren(ViewFinder subFinder, ViewChecker subChecker) {
         List<View> res = new ArrayList<>();
@@ -11286,7 +11423,7 @@ public abstract class AQuery {
     }
 
     public interface TestFunction {
-        public boolean test(View v);
+        boolean test(View v);
     }
 
     /**
@@ -11319,7 +11456,7 @@ public abstract class AQuery {
     /**
      * Returns the test function that checks if a View has NOT a given tag
      */
-    private static ViewChecker nottagChecker(String tag) {
+    private static ViewChecker notTagChecker(String tag) {
         if ("*".equals(tag))
             return NEVER_MATCH;
         return new NotTagChecker(tag);
@@ -11388,6 +11525,7 @@ public abstract class AQuery {
     /**
      * Returns true if and only if the position can be written as a*k+b with k positive integer
      */
+    @SuppressWarnings("SimplifiableIfStatement")
     private static boolean isNth(int position, int a, int b) {
         int diff = position-a;
         if (b == 0)
@@ -11403,7 +11541,7 @@ public abstract class AQuery {
 
     private static final HashMap<String,ViewChecker> CONDITION_CHECKERS = initConditionCheckers();
     private static HashMap<String,ViewChecker> initConditionCheckers() {
-        HashMap<String,ViewChecker> res = new HashMap<String,ViewChecker>();
+        HashMap<String,ViewChecker> res = new HashMap<>();
         res.put("empty", new EmptyChecker());
         res.put("first-child", new FirstChildChecker());
         res.put("last-child", new LastChildChecker());
@@ -11430,7 +11568,7 @@ public abstract class AQuery {
                 return new NthLastChildChecker(formatCoeffs(m.group(1)));
             m = NOT_TAG_MATCHER.matcher(condition);
             if (m.find())
-                return nottagChecker(m.group(1));
+                return notTagChecker(m.group(1));
             throw new IllegalArgumentException("Invalid filter condition \""+ condition +"\"");
         }
     }
@@ -11591,7 +11729,7 @@ public abstract class AQuery {
         }
     }
     /**
-     * A ViewFinder class that returns every children and subchildren of the given elements
+     * A ViewFinder class that returns every children and sub-children of the given elements
      */
     private static class ChildrenFinder extends ViewFinder {
         private ViewFinder subFinder;
@@ -11771,6 +11909,7 @@ public abstract class AQuery {
     /**
      * The ViewCheck that checks if a View is the n-th child of its parent
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static class NthChildChecker extends ViewChecker {
         private int a, b;
         public NthChildChecker(int b, int a) {
@@ -11789,6 +11928,7 @@ public abstract class AQuery {
     /**
      * The ViewCheck that checks if a View is the n-th last child of its parent
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static class NthLastChildChecker extends ViewChecker {
         private int a, b;
         public NthLastChildChecker(int b, int a) {
@@ -11928,7 +12068,7 @@ public abstract class AQuery {
         }
     }
 
-    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^\\#:\\[]+)|(?:\\[\\d+\\])");
+    private static Pattern CONDITION_PATTERN = Pattern.compile("(?:[#:][^#:\\[]+)|(?:\\[\\d+\\])");
     /**
      * Returns the ViewCheck that checks if a View matches a given set of conditions,
      * such as "TextView#my_id:first-child"
@@ -11966,7 +12106,7 @@ public abstract class AQuery {
         return res;
     }
     /**
-     * Returns all the children and subchildren of a given view
+     * Returns all the children and sub-children of a given view
      */
     protected static List<View> getDescendants(View v) {
         ArrayList<View> res = new ArrayList<>();
@@ -11984,7 +12124,7 @@ public abstract class AQuery {
         return res;
     }
     /**
-     * Returns all the children and subchildren of a given view, plus the view itself
+     * Returns all the children and sub-children of a given view, plus the view itself
      */
     protected static List<View> getFamily(View v) {
         ArrayList<View> res = new ArrayList<>();
@@ -12024,26 +12164,26 @@ public abstract class AQuery {
         }
     }
     /**
-     * Returns all the children and subchildren of the elements
+     * Returns all the children and sub-children of the elements
      */
     public AQuery descendants() {
-        List<View> res = new ArrayList<View>();
+        List<View> res = new ArrayList<>();
         for (View v : list())
             res = union(res, getDescendants(v));
         return new $Array(ctx,res);
     }
     /**
-     * Returns all the children and subchildren of the elements, plus the elements themselves
+     * Returns all the children and sub-children of the elements, plus the elements themselves
      */
     public AQuery family() {
-        List<View> res = new ArrayList<View>();
+        List<View> res = new ArrayList<>();
         for (View v : list())
             res = union(res,getFamily(v));
         return new $Array(ctx,res);
     }
 
     /**
-     * An interface to do the "foreah"-like loop
+     * An interface to do the "foreach"-like loop
      */
     public interface EachListener {
         /**
@@ -12081,6 +12221,42 @@ public abstract class AQuery {
                 res.add(elt1);
         }
         return res;
+    }
+
+    /**
+     * Displays an information message next to the specified View
+     */
+    private static void displayToastAboveView(Context ctx, View v, String message, int duration) {
+        int xOffset = 0;
+        int yOffset = 0;
+        Rect gvr = new Rect();
+
+        int vHeight = v.getHeight();
+
+        if (v.getGlobalVisibleRect(gvr)) {
+            View root = v.getRootView();
+
+            int halfWidth = root.getRight() / 2;
+            int halfHeight = root.getBottom() / 2;
+
+            int parentCenterX = (gvr.left + gvr.right)/2;
+            int parentCenterY = (gvr.top + gvr.bottom)/2;
+            int parentHeight = (gvr.bottom - gvr.top)/2;
+
+            if (parentCenterY < halfHeight)
+                yOffset = parentCenterY - halfHeight + parentHeight + 20;
+            else
+                yOffset = parentCenterY - halfHeight - parentHeight - 60;
+
+            if (parentCenterX < halfWidth)
+                xOffset = -(halfWidth - parentCenterX);
+            else
+                xOffset = parentCenterX - halfWidth;
+        }
+
+        Toast toast = Toast.makeText(ctx, message, duration);
+        toast.setGravity(Gravity.CENTER, xOffset, yOffset);
+        toast.show();
     }
 
     /**

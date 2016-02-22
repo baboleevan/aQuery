@@ -14,6 +14,7 @@ import java.util.List;
  *
  * Inherit your fragment activity from this one to be be able to use it
  */
+@SuppressWarnings("unused")
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class $Fragment extends Fragment {
     private final $FConstructors aqFactory = new $FConstructors(this); // The object containing all useful methods to construct AQuery objects

@@ -12,6 +12,7 @@ import java.util.List;
  * The class containing all useful functions to create AQuery objects.
  * Those methods are used directly in $Activity object
  */
+@SuppressWarnings("unused")
 public class $Constructors {
 
     protected Activity ctx; // The activity associated to the AQuery objects that will be created

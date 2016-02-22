@@ -9,6 +9,7 @@ import android.os.Build;
 /**
  * A class to create a Drawable that is an intermediary between 2 drawables
  */
+@SuppressWarnings("unused")
 public class MergeDrawable extends Drawable {
     private Drawable d1;
     private Drawable d2;

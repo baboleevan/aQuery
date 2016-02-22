@@ -12,6 +12,7 @@ import java.util.List;
  *
  * Inherit your fragment activity from this one to be be able to use it
  */
+@SuppressWarnings("unused")
 public class $FragmentActivity extends FragmentActivity {
     private final $Constructors aqFactory = new $Constructors(this); // The object containing all useful methods to construct AQuery objects
 

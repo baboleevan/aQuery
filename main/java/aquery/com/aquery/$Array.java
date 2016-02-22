@@ -35,8 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Timothé on 01/01/2016.
+ * An AQuery object containing a set of elements
  */
+@SuppressWarnings("unused")
 public class $Array extends AQuery {
     List<View> views;
 
@@ -47,6 +48,7 @@ public class $Array extends AQuery {
         super(ctx);
         this.views = views;
     }
+    @SuppressWarnings("TryWithIdenticalCatches")
     public $Array(Activity ctx, String xml, AQuery parent, boolean append) {
         super(ctx);
         try {
@@ -107,6 +109,7 @@ public class $Array extends AQuery {
         views.remove(v);
     }
 
+    @SuppressWarnings("EmptyCatchBlock")
     private ArrayList<View> parseXML(String xml, AQuery parent, boolean append) throws XmlPullParserException, IOException {
         if (null == parent)
             append = false;
@@ -207,6 +210,7 @@ public class $Array extends AQuery {
             res = new ViewGroup.LayoutParams(wLP,hLP);
         return res;
     }
+    @SuppressWarnings("unchecked")
     private static <T> void removeLast(AbstractCollection<T> a) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
             ((ArrayDeque<T>) a).removeLast();
@@ -215,6 +219,7 @@ public class $Array extends AQuery {
             la.remove(la.size()-1);
         }
     }
+    @SuppressWarnings("unchecked")
     private static <T> T getLast(AbstractCollection<T> a) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
             return ((ArrayDeque<T>) a).getLast();
