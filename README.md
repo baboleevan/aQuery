@@ -143,6 +143,8 @@ aQuery provides many functions to simplify your life of Android Developer
 For further details about what you can do, take a look at the [Wiki](https://github.com/tmalahie/aQuery/wiki) and download the [Demo Examples](http://timothe.malahieude.net/projects/aQuery/aQuery-demo.zip).  
 Want to take part in the project ? Send me an email at t.malahieude@gmail.com to ask to contribute !
 
+---
+
 *This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.*
 
 *This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.*
