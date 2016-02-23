@@ -135,13 +135,13 @@ aQuery provides many functions to simplify your life of Android Developer
 * Open a new Activity: `$.open("ActivityName")`
 * Access a value resource: `$.string(R.string.my_string)`, `$.color(R.color.my_color)`, etc
 * Convert a unit into another: `$.convert(10, "px","dp")`
-* Append views in an XML resource to a parent: `$(R.layout.message, $("#messages_list"));`;
-
-For further details about what you can do, take a look at the [Wiki](https://github.com/tmalahie/aQuery/wiki) and download the [Demo Examples](http://timothe.malahieude.net/projects/aQuery/aQuery-demo.zip).
-
-Want to take part in the project ? Send me an email at t.malahieude@gmail.com to ask to contribute !
+* Append views in an XML resource to a parent: `$(R.layout.message, $("#messages_list"))`
+* Write a log message: `$.debug(msg)`, `$.error(msg)`, etc. No tag required !
 
 ---
+
+For further details about what you can do, take a look at the [Wiki](https://github.com/tmalahie/aQuery/wiki) and download the [Demo Examples](http://timothe.malahieude.net/projects/aQuery/aQuery-demo.zip).  
+Want to take part in the project ? Send me an email at t.malahieude@gmail.com to ask to contribute !
 
 *This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.*
 
