@@ -9762,7 +9762,7 @@ public abstract class AQuery {
     /**
      * Returns the animation step that make the view appearing progressively
      */
-    private AnimationParams showProgressively(View v, int timeMS, EaseListener easing, AnimationListener callback, boolean queue) {
+    private AnimationParams showProgressively(View v, int timeMS, EaseListener easing, final AnimationListener callback, boolean queue) {
         final $Element jElt = new $Element(ctx, v);
         int lWidth = jElt.propi("layout_width"), lHeight = jElt.propi("layout_height");
         float alpha = jElt.propf("alpha");
@@ -9770,11 +9770,40 @@ public abstract class AQuery {
         jElt.prop("layout_height", 0);
         jElt.prop("alpha", 0);
         show(v);
+        final boolean[] completed = {false};
         return new AnimationParams(new PropertyTransition[]{
-                Transition.prop("layout_width", lWidth),
-                Transition.prop("layout_height", lHeight),
-                Transition.prop("alpha", alpha)
-        }, timeMS, easing, callback, queue);
+            Transition.prop("layout_width", lWidth),
+            Transition.prop("layout_height", lHeight),
+            Transition.prop("alpha", alpha)
+        }, timeMS, easing, new AnimationListener() {
+            @Override
+            public void step(View v, float t) {
+                if (callback != null)
+                    callback.step(v, t);
+            }
+
+            @Override
+            public void always(View v) {
+                if (!completed[0])
+                    togglingElements.remove(v);
+                if (callback != null)
+                    callback.always(v);
+            }
+
+            @Override
+            public void complete(View v) {
+                togglingElements.remove(v);
+                completed[0] = true;
+                if (callback != null)
+                    callback.complete(v);
+            }
+
+            @Override
+            public void start(View v) {
+                if (callback != null)
+                    callback.start(v);
+            }
+        }, queue);
     }
 
     /**
@@ -9971,6 +10000,7 @@ public abstract class AQuery {
         $Element jElt = new $Element(ctx, v);
         final int lWidth = jElt.propi("layout_width"), iHeight = jElt.propi("layout_height");
         final float alpha = jElt.propf("alpha");
+        final boolean[] completed = {false};
         return new AnimationParams(new PropertyTransition[]{
                 Transition.prop("layout_width", 0),
                 Transition.prop("layout_height", 0),
@@ -9995,12 +10025,16 @@ public abstract class AQuery {
                 jElt.prop("layout_width", lWidth);
                 jElt.prop("layout_height", iHeight);
                 jElt.prop("alpha", alpha);
+                togglingElements.remove(v);
+                completed[0] = true;
                 if (callback != null)
                     callback.complete(v);
             }
 
             @Override
             public void always(View v) {
+                if (!completed[0])
+                    togglingElements.remove(v);
                 if (callback != null)
                     callback.always(v);
             }
@@ -10159,15 +10193,17 @@ public abstract class AQuery {
                     }
                 });
             }
-            else
+            else if (!togglingElements.contains(v))
                 $Element.animateView(ctx, v, toggleProgressively(v, timeMS, easing, callback, false));
         }
         return this;
     }
+    private static ArrayList<View> togglingElements = new ArrayList<>();
     /**
      * Returns the animation step that make the view appearing/disappearing progressively
      */
     private AnimationParams toggleProgressively(View v, int timeMS, EaseListener easing, final AnimationListener callback, boolean queue) {
+        togglingElements.add(v);
         if (visible(v))
             return hideProgressively(v, timeMS, easing, callback, queue);
         else
@@ -11481,6 +11517,7 @@ public abstract class AQuery {
     /**
      * Format a given coefficient, given by an integer and/or a +/- sign before
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static int formatCoeff(String coeff) {
         if ("".equals(coeff) || "+".equals(coeff))
             return 1;
@@ -11493,10 +11530,11 @@ public abstract class AQuery {
     /**
      * Format the coefficients of an expression of the form "bn+a" or "bn" or "a"
      * @param expression
-     * The expression where to retrieve the coefficiens
+     * The expression where to retrieve the coefficients
      * @return
      * An array containing [a,b]
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static int[] formatCoeffs(String expression) {
         int b, a;
         try {
