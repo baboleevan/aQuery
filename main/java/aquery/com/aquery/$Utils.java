@@ -93,11 +93,11 @@ public class $Utils {
         }
 
         /**
-         * Converts a PostData array to its String URL parametter
+         * Converts a PostData array to its String URL parameter
          * @param params
-         * The parametters. For example {new PostData("attr1","value1"),new PostData("attr2","value2")}
+         * The parameters. For example {new PostData("attr1","value1"),new PostData("attr2","value2")}
          * @return
-         * The value. For example,
+         * The value. For example "attr1=value1&attr2=value2"
          */
         public static String arrayToStringParams(PostData[] params) {
             String res = "";
@@ -122,7 +122,7 @@ public class $Utils {
         }
 
         /**
-         * An exception thrown when an HTTP response error occured
+         * An exception thrown when an HTTP response error occurred
          * Allows to retreve the error code (404, 500, etc)
          */
         public static class FailureResponseException extends Exception {
@@ -157,7 +157,7 @@ public class $Utils {
             void done(String res);
 
             /**
-             * Function called when an error occured during the request
+             * Function called when an error occurred during the request
              * @param e
              * The exception responsible for the error
              */
@@ -172,15 +172,22 @@ public class $Utils {
              */
             void always(boolean success);
         }
+        /**
+         * An NetworkListener interface specialized for JSON responses
+         */
         public interface JSONNetworkListener {
             /**
-             * Function called when the ajax executed successfully
+             * Function called when the ajax executed successfully.
+             * You can throw a JSONException in the signature of the function
+             * so that you can process the JSON result without putting heavy try/catch blocks
+             * If the exception is actually thrown, the fail() function will be called
              * @param res
-             * The response, parsed as JSON. Is the parse fails, it will run fail function
+             * The response, parsed as JSON.
+             * Is the parse fails, it will run fail() function with a JSONParseException as argument
              */
-            void done(JSONObject res);
+            void done(JSONObject res) throws JSONException;
             /**
-             * Function called when an error occured during the request
+             * Function called when an error occurred during the request
              * @param e
              * The exception responsible for the error
              */
@@ -381,10 +388,17 @@ public class $Utils {
             return new NetworkListener() {
                 @Override
                 public void done(String res) {
+                    JSONObject obj;
                     try {
-                        manager.done(new JSONObject(res));
+                        obj = new JSONObject(res);
                     } catch (JSONException e) {
-                        fail(new JSONException("Error while parsing \""+ res +"\" : "+ e.getMessage()));
+                        fail(new JSONParseException(res,e));
+                        return;
+                    }
+                    try {
+                        manager.done(obj);
+                    } catch (JSONException e) {
+                        fail(e);
                     }
                 }
 
@@ -602,6 +616,61 @@ public class $Utils {
      */
     public AjaxQuery ajax(String url) {
         return new AjaxQuery(ctx).ajax(url);
+    }
+
+    /**
+     * Converts an array of post data to its String url representation
+     * @param data
+     * The post parameters. For example {new PostData("attr1","value1"),new PostData("attr2","value2")}
+     * @return
+     * The value. For example "attr1=value1&attr2=value2"
+     */
+    public String param(AjaxQuery.PostData[] data) {
+        return AjaxQuery.arrayToStringParams(data);
+    }
+
+    /**
+     * An exception thrown when a parsing failed.
+     * Allows to access the text that failed to be parsed
+     */
+    public static class ParseException extends Exception {
+        private String input;
+
+        /**
+         * Constructor of ParseException
+         * @param input
+         * The original text that failed to be parsed
+         * @param e
+         * The exception thrown
+         */
+        public ParseException(String input, Exception e) {
+            super("Error while parsing \""+ input +"\": "+ e.getMessage());
+            this.input = input;
+        }
+
+        /**
+         * Returns the original text that failed to be parsed
+         */
+        public String getInput() {
+            return input;
+        }
+    }
+
+    /**
+     * An exception thrown when a JSON parsing failed
+     * Allows to access the text that failed to be parsed
+     */
+    public static class JSONParseException extends ParseException {
+        /**
+         * Constructor of JSONParseException
+         *
+         * @param input The original text that failed to be parsed
+         * @param e
+         * The exception thrown
+         */
+        public JSONParseException(String input, JSONException e) {
+            super(input, e);
+        }
     }
 
     /**
